@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ec96f"/>
+      <stop offset="100%" stop-color="#1e7e45"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ab858"/>
+      <stop offset="100%" stop-color="#1a6b3a"/>
+    </linearGradient>
+  </defs>
+  <!-- fundo grande -->
+  <rect x="2" y="6" width="20" height="20" rx="4" fill="url(#g1)"/>
+  <!-- quadrado sobreposto -->
+  <rect x="11" y="2" width="18" height="18" rx="4" fill="url(#g2)"/>
+  <!-- X branco -->
+  <text x="10" y="26" font-family="Arial Black, sans-serif" font-size="15" font-weight="900" fill="white" letter-spacing="-1">X</text>
+</svg>

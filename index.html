@@ -6,6 +6,44 @@
 <title>Portugália Roleplay — Sugestões</title>
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css">
 </head>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.querySelector('table');
+  const cols = table.querySelectorAll('th');
+
+  cols.forEach(col => {
+    const resizer = document.createElement('div');
+    resizer.classList.add('resizer');
+    col.appendChild(resizer);
+
+    let x = 0, w = 0;
+
+    resizer.addEventListener('mousedown', (e) => {
+      x = e.clientX;
+      w = col.offsetWidth;
+      resizer.classList.add('active');
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+
+    function onMouseMove(e) {
+      const diff = e.clientX - x;
+      col.style.width = (w + diff) + 'px';
+      col.style.minWidth = (w + diff) + 'px';
+    }
+
+    function onMouseUp() {
+      resizer.classList.remove('active');
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+  });
+});
+</script>
+
+
 <body>
 
 <header>
@@ -41,35 +79,68 @@
     <label>Descrição</label>
     <input id="f-desc" type="text" placeholder="Detalhes" />
   </div>
-
   <button class="btn-add" onclick="addEntry()">+ Adicionar</button>
 </div>
 
 <div class="toolbar">
-  <input type="text" id="search" placeholder="Pesquisar" oninput="renderTable()" />
-  <div class="toolbar-right">
-    <button class="btn-excel" onclick="exportExcel()">↓ Excel</button>
-    <button class="btn-clear" onclick="clearAll()">Limpar tudo</button>
+  <div class="search-wrap">
+    <input type="text" id="search" placeholder="Pesquisar" oninput="renderTable()" />
+    <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Limpar pesquisa">×</button>
   </div>
+  <div class="toolbar-right">
+    <button class="btn-excel" onclick="exportExcel()">
+      <img src="excel-icon.svg" width="18" height="18" alt="Excel" />
+      Exportar Excel
+    </button>
+    <button class="btn-clear" onclick="clearAll()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      Limpar tudo
+    </button>
+  </div>
+</div>
+
+<div class="filter-chips">
+  <span class="chips-label">Prioridade:</span>
+  <button class="chip" data-filter="prioridade" data-value="Urgente" onclick="setFilter('prioridade','Urgente')">Urgente</button>
+  <button class="chip" data-filter="prioridade" data-value="Necessário" onclick="setFilter('prioridade','Necessário')">Necessário</button>
+  <button class="chip" data-filter="prioridade" data-value="Não urgente" onclick="setFilter('prioridade','Não urgente')">Não urgente</button>
+  <button class="chip" data-filter="prioridade" data-value="Stand-by" onclick="setFilter('prioridade','Stand-by')">Stand-by</button>
+  <button class="chip" data-filter="prioridade" data-value="Terminado" onclick="setFilter('prioridade','Terminado')">Terminado</button>
+  <button class="chip" data-filter="prioridade" data-value="Inviável" onclick="setFilter('prioridade','Inviável')">Inviável</button>
+  <span class="chips-sep"></span>
+  <span class="chips-label">Estado:</span>
+  <button class="chip" data-filter="feedback" data-value="Em análise" onclick="setFilter('feedback','Em análise')">Em análise</button>
+  <button class="chip" data-filter="feedback" data-value="Em curso" onclick="setFilter('feedback','Em curso')">Em curso</button>
+  <button class="chip" data-filter="feedback" data-value="Em testes" onclick="setFilter('feedback','Em testes')">Em testes</button>
+  <button class="chip" data-filter="feedback" data-value="Update" onclick="setFilter('feedback','Update')">Update</button>
+  <button class="chip" data-filter="feedback" data-value="Concluído" onclick="setFilter('feedback','Concluído')">Concluído</button>
+  <button class="chip" data-filter="feedback" data-value="Recusado" onclick="setFilter('feedback','Recusado')">Recusado</button>
+  <button class="chip" data-filter="feedback" data-value="Stand-by" onclick="setFilter('feedback','Stand-by')">Stand-by</button>
+  <button class="chip" data-filter="feedback" data-value="Sem efeito" onclick="setFilter('feedback','Sem efeito')">Sem efeito</button>
+  <button class="chip" data-filter="feedback" data-value="Sem sentido" onclick="setFilter('feedback','Sem sentido')">Sem sentido</button>
+  <button class="chip-clear-all" id="chip-clear-all" onclick="clearFilters()" style="display:none">× Limpar filtros</button>
 </div>
 
 <div id="status-msg" class="status-msg"></div>
 
-<table>
-  <thead>
-    <tr>
-      <th onclick="sortBy('id')" id="th-id">ID <span class="sort-icon">↕</span></th>
-      <th onclick="sortBy('discord')" id="th-discord">Discord <span class="sort-icon">↕</span></th>
-      <th onclick="sortBy('sugestao')" id="th-sugestao">Sugestão <span class="sort-icon">↕</span></th>
-      <th onclick="sortBy('descricao')" id="th-descricao">Descrição <span class="sort-icon">↕</span></th>
-      <th onclick="sortBy('prioridade')" id="th-prioridade">Prioridade <span class="sort-icon">↕</span></th>
-      <th onclick="sortBy('feedback')" id="th-feedback">Feedback Dev <span class="sort-icon">↕</span></th>
-      <th onclick="sortBy('data')" id="th-data">Data <span class="sort-icon">↕</span></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody id="tbody"></tbody>
-</table>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('id')" id="th-id">ID <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('discord')" id="th-discord">Discord <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('sugestao')" id="th-sugestao">Sugestão <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('descricao')" id="th-descricao">Descrição <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('prioridade')" id="th-prioridade">Prioridade <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('feedback')" id="th-feedback">Feedback Dev <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('comentario')" id="th-comentario">Comentários <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('data')" id="th-data">Data <span class="sort-icon">↕</span></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
 
 <div class="toast" id="toast"></div>
 

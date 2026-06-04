@@ -18,26 +18,20 @@ let data = [];
 let sortCol = 'id';
 let sortAsc = false;
 let currentTab = 'ativas';
+let activeFilters = { prioridade: '', feedback: '' };
 
 const prioridadeClasse = {
-  'Urgente': 'badge-urgente',
-  'Necessário': 'badge-necessario',
-  'Inviável': 'badge-inviavel',
-  'Terminado': 'badge-terminado',
-  'Não urgente': 'badge-naougente',
-  'Stand-by': 'badge-standby'
+  'Urgente': 'badge-urgente', 'Necessário': 'badge-necessario', 'Inviável': 'badge-inviavel',
+  'Terminado': 'badge-terminado', 'Não urgente': 'badge-naougente', 'Stand-by': 'badge-standby'
 };
 
 const feedbackClasse = {
-  'Em curso': 'badge-emcurso',
-  'Concluído': 'badge-concluido',
-  'Recusado': 'badge-recusado',
-  'Update': 'badge-update',
-  'Em testes': 'badge-emtestes',
-  'Stand-by': 'badge-standby',
-  'Em análise': 'badge-emanalise',
-  'Sem efeito': 'badge-semefeito',
+  'Em curso': 'badge-emcurso', 'Concluído': 'badge-concluido', 'Recusado': 'badge-recusado',
+  'Update': 'badge-update', 'Em testes': 'badge-emtestes', 'Stand-by': 'badge-standby',
+  'Em análise': 'badge-emanalise', 'Sem efeito': 'badge-semefeito', 'Sem sentido': 'badge-semsentido'
 };
+
+const prioOrder = { 'Urgente': 0, 'Necessário': 1, 'Não urgente': 2, 'Stand-by': 3, 'Terminado': 4, 'Inviável': 5, '': 99 };
 
 onSnapshot(query(colRef, orderBy("id", "asc")), (snapshot) => {
   data = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
@@ -56,7 +50,7 @@ async function addEntry() {
   const nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : 1;
 
   setStatus("A guardar...");
-  await addDoc(colRef, { id: nextId, discord, sugestao: sug, descricao: desc, prioridade: '', feedback: '', data: dataStr });
+  await addDoc(colRef, { id: nextId, discord, sugestao: sug, descricao: desc, prioridade: '', feedback: '', comentario: '', data: dataStr });
 
   document.getElementById('f-discord').value = '';
   document.getElementById('f-sug').value = '';
@@ -65,11 +59,28 @@ async function addEntry() {
   toast('Sugestão adicionada!');
 }
 
-async function updateField(docId, field, value) {
+async function updateField(docId, field, value, el) {
+  const td = el ? el.closest('td') : null;
+  if (td) td.classList.add('td-saving');
   await updateDoc(doc(db, "sugestoes", docId), { [field]: value });
+  if (td) {
+    td.classList.remove('td-saving');
+    td.classList.add('td-saved');
+    setTimeout(() => td.classList.remove('td-saved'), 1200);
+  }
 }
 
-async function deleteEntry(docId) {
+function deleteEntry(docId, btnEl) {
+  const td = btnEl.closest('td');
+  td.innerHTML = `
+    <div class="confirm-del">
+      <span>Apagar?</span>
+      <button class="confirm-yes" onclick="confirmDelete('${docId}')">Sim</button>
+      <button class="confirm-no" onclick="renderTable()">Não</button>
+    </div>`;
+}
+
+async function confirmDelete(docId) {
   await deleteDoc(doc(db, "sugestoes", docId));
   toast('Removido.');
 }
@@ -90,27 +101,89 @@ function sortBy(col) {
 
 function setTab(tab) {
   currentTab = tab;
-  document.getElementById('tab-ativas').classList.toggle('active', tab === 'ativas');
-  document.getElementById('tab-recusadas').classList.toggle('active', tab === 'recusadas');
-  document.getElementById('tab-concluidos').classList.toggle('active', tab === 'concluidos');
+  activeFilters = { prioridade: '', feedback: '' };
+  renderTable();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearSearch() {
+  document.getElementById('search').value = '';
+  document.getElementById('search-clear').classList.remove('visible');
   renderTable();
 }
 
-function badgeHtml(value, classeMap) {
-  if (!value) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
-  const cls = classeMap[value] || 'badge-default';
-  return `<span class="badge ${cls}">${esc(value)}</span>`;
+function clearFilters() {
+  activeFilters = { prioridade: '', feedback: '' };
+  renderTable();
 }
 
-function selectHtml(docId, field, value, options) {
-  const opts = options.map(o => `<option value="${o}" ${value === o ? 'selected' : ''}>${o}</option>`).join('');
-  return `<select class="select-inline" onchange="updateField('${docId}','${field}',this.value)">
-    <option value="">—</option>${opts}
-  </select>`;
+function setFilter(type, value) {
+  activeFilters[type] = activeFilters[type] === value ? '' : value;
+  renderTable();
+}
+
+function customSelectHtml(docId, field, value, options, classeMap) {
+  const triggerInner = value
+    ? `<span class="badge ${classeMap[value] || 'badge-default'}">${esc(value)}</span>`
+    : `<span class="cs-placeholder">—</span>`;
+
+  const optionsHtml = [
+    `<div class="cs-option" onclick="selectOption(this,'${docId}','${field}','')"><span class="cs-empty">—</span></div>`,
+    ...options.map(o => {
+      const cls = classeMap[o] || 'badge-default';
+      return `<div class="cs-option${value === o ? ' cs-selected' : ''}" onclick="selectOption(this,'${docId}','${field}','${o}')"><span class="badge ${cls}">${esc(o)}</span></div>`;
+    })
+  ].join('');
+
+  return `<div class="custom-select" data-field="${field}">
+    <div class="cs-trigger" onclick="toggleSelect(this)">${triggerInner}<span class="cs-arrow">▾</span></div>
+    <div class="cs-dropdown">${optionsHtml}</div>
+  </div>`;
+}
+
+function toggleSelect(trigger) {
+  const cs = trigger.parentElement;
+  const isOpen = cs.classList.contains('cs-open');
+  document.querySelectorAll('.custom-select.cs-open').forEach(el => el.classList.remove('cs-open'));
+  if (!isOpen) {
+    cs.classList.add('cs-open');
+    const rect = trigger.getBoundingClientRect();
+    const dropdown = cs.querySelector('.cs-dropdown');
+    dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    dropdown.style.left = (rect.left + window.scrollX) + 'px';
+    dropdown.style.minWidth = Math.max(rect.width, 150) + 'px';
+  }
+}
+
+function selectOption(optEl, docId, field, value) {
+  const cs = optEl.closest('.custom-select');
+  cs.classList.remove('cs-open');
+  const classeMap = field === 'prioridade' ? prioridadeClasse : feedbackClasse;
+  const trigger = cs.querySelector('.cs-trigger');
+  trigger.innerHTML = value
+    ? `<span class="badge ${classeMap[value] || 'badge-default'}">${esc(value)}</span><span class="cs-arrow">▾</span>`
+    : `<span class="cs-placeholder">—</span><span class="cs-arrow">▾</span>`;
+  cs.querySelectorAll('.cs-option').forEach(o => o.classList.toggle('cs-selected', o.dataset.value === value));
+  updateField(docId, field, value);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.custom-select'))
+    document.querySelectorAll('.custom-select.cs-open').forEach(el => el.classList.remove('cs-open'));
+});
+
+function avatarHtml(name) {
+  const colors = ['#1B2F6E','#2e7d4f','#8B1A1A','#00897b','#8e24aa','#c0392b','#1565c0','#546e7a'];
+  let hash = 0;
+  for (const c of name) hash = (hash * 31 + c.charCodeAt(0)) % colors.length;
+  return `<span class="avatar" style="background:${colors[Math.abs(hash)]}">${name.charAt(0).toUpperCase()}</span>`;
 }
 
 function renderTable() {
-  const search = (document.getElementById('search')?.value || '').toLowerCase();
+  const searchVal = document.getElementById('search')?.value || '';
+  const search = searchVal.toLowerCase();
+  const clearBtn = document.getElementById('search-clear');
+  if (clearBtn) clearBtn.classList.toggle('visible', searchVal.length > 0);
   let filtered = data.filter(d =>
     !search ||
     String(d.id).includes(search) ||
@@ -121,23 +194,51 @@ function renderTable() {
     (d.feedback || '').toLowerCase().includes(search)
   );
 
-  if (currentTab === 'ativas') {
-    filtered = filtered.filter(d => d.feedback !== 'Recusado' && d.feedback !== 'Concluído');
-  } else if (currentTab === 'recusadas') {
-    filtered = filtered.filter(d => d.feedback === 'Recusado');
-  } else if (currentTab === 'concluidos') {
-    filtered = filtered.filter(d => d.feedback === 'Concluído');
-  }
+  // contadores dos tabs
+  const counts = {
+    ativas: filtered.filter(d => d.feedback !== 'Recusado' && d.feedback !== 'Concluído').length,
+    recusadas: filtered.filter(d => d.feedback === 'Recusado').length,
+    concluidos: filtered.filter(d => d.feedback === 'Concluído').length,
+  };
+  ['ativas','recusadas','concluidos'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (!el) return;
+    const label = t === 'ativas' ? 'Ativas' : t === 'recusadas' ? 'Recusadas' : 'Concluídos';
+    el.innerHTML = `${label} <span class="tab-count">${counts[t]}</span>`;
+    el.classList.toggle('active', t === currentTab);
+  });
+
+  // filtro por tab
+  if (currentTab === 'ativas') filtered = filtered.filter(d => d.feedback !== 'Recusado' && d.feedback !== 'Concluído');
+  else if (currentTab === 'recusadas') filtered = filtered.filter(d => d.feedback === 'Recusado');
+  else if (currentTab === 'concluidos') filtered = filtered.filter(d => d.feedback === 'Concluído');
+
+  // filtros rápidos
+  if (activeFilters.prioridade) filtered = filtered.filter(d => d.prioridade === activeFilters.prioridade);
+  if (activeFilters.feedback) filtered = filtered.filter(d => d.feedback === activeFilters.feedback);
+
+  // estado activo dos chips e botão limpar filtros
+  const hasFilters = activeFilters.prioridade || activeFilters.feedback;
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.classList.toggle('chip-active', activeFilters[chip.dataset.filter] === chip.dataset.value);
+  });
+  const clearAllBtn = document.getElementById('chip-clear-all');
+  if (clearAllBtn) clearAllBtn.style.display = hasFilters ? 'inline-block' : 'none';
+
   filtered.sort((a, b) => {
     let va = a[sortCol] ?? '', vb = b[sortCol] ?? '';
-    if (sortCol === 'id') { va = Number(va); vb = Number(vb); }
-    else { va = String(va).toLowerCase(); vb = String(vb).toLowerCase(); }
+    if (sortCol === 'id') return sortAsc ? Number(va) - Number(vb) : Number(vb) - Number(va);
+    if (sortCol === 'prioridade') {
+      va = prioOrder[va] ?? 99; vb = prioOrder[vb] ?? 99;
+      return sortAsc ? va - vb : vb - va;
+    }
+    va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
     if (va < vb) return sortAsc ? -1 : 1;
     if (va > vb) return sortAsc ? 1 : -1;
     return 0;
   });
 
-  ['id','discord','sugestao','descricao','prioridade','feedback','data'].forEach(c => {
+  ['id','discord','sugestao','descricao','prioridade','feedback','comentario','data'].forEach(c => {
     const th = document.getElementById('th-' + c);
     if (!th) return;
     th.classList.toggle('sorted', sortCol === c);
@@ -150,18 +251,26 @@ function renderTable() {
 
   const tbody = document.getElementById('tbody');
   if (!filtered.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">— Sem sugestões registadas —</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">— Sem sugestões registadas —</td></tr>';
   } else {
     tbody.innerHTML = filtered.map(d => `
-      <tr>
+      <tr class="row-fade">
         <td class="td-id">#${d.id}</td>
-        <td class="td-discord">${esc(d.discord)}</td>
+        <td class="td-discord"><div class="discord-cell">${avatarHtml(d.discord)}<span>${esc(d.discord)}</span></div></td>
         <td class="td-sug">${esc(d.sugestao)}</td>
         <td class="td-desc">${esc(d.descricao || '—')}</td>
-        <td>${selectHtml(d._docId, 'prioridade', d.prioridade, prioOpts)}</td>
-        <td>${selectHtml(d._docId, 'feedback', d.feedback, feedOpts)}</td>
+        <td>${customSelectHtml(d._docId, 'prioridade', d.prioridade, prioOpts, prioridadeClasse)}</td>
+        <td>${customSelectHtml(d._docId, 'feedback', d.feedback, feedOpts, feedbackClasse)}</td>
+        <td class="td-comment">
+          <div class="comment-cell" data-docid="${d._docId}" data-value="${esc(d.comentario || '')}" onclick="startEditComment(this)">
+            ${d.comentario
+              ? `<span class="comment-text">${esc(d.comentario)}</span>`
+              : '<span class="comment-placeholder">Adicionar...</span>'}
+            <span class="comment-icon">✏</span>
+          </div>
+        </td>
         <td class="td-date">${d.data}</td>
-        <td class="td-actions"><button class="btn-del" onclick="deleteEntry('${d._docId}')" title="Eliminar">×</button></td>
+        <td class="td-actions"><button class="btn-del" onclick="deleteEntry('${d._docId}',this)" title="Eliminar">×</button></td>
       </tr>
     `).join('');
   }
@@ -169,12 +278,37 @@ function renderTable() {
   document.getElementById('total-badge').textContent = data.length + (data.length === 1 ? ' sugestão' : ' sugestões');
 }
 
+function startEditComment(cell) {
+  const docId = cell.dataset.docid;
+  const raw = cell.dataset.value.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  const td = cell.parentElement;
+
+  const ta = document.createElement('textarea');
+  ta.className = 'comment-textarea';
+  ta.value = raw;
+  ta.placeholder = 'Escreve um comentário...';
+
+  td.innerHTML = '';
+  td.appendChild(ta);
+  ta.focus();
+  ta.style.height = 'auto';
+  ta.style.height = Math.max(ta.scrollHeight, 36) + 'px';
+
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.max(ta.scrollHeight, 36) + 'px';
+  });
+
+  ta.addEventListener('blur', () => updateField(docId, 'comentario', ta.value.trim()));
+  ta.addEventListener('keydown', e => { if (e.key === 'Escape') ta.blur(); });
+}
+
 function exportExcel() {
   if (!data.length) { toast('Sem dados para exportar.'); return; }
-  const rows = [['ID','Discord','Sugestão','Descrição','Prioridade','Feedback Dev','Data']];
-  data.forEach(d => rows.push([d.id, d.discord, d.sugestao, d.descricao || '', d.prioridade || '', d.feedback || '', d.data]));
+  const rows = [['ID','Discord','Sugestão','Descrição','Prioridade','Feedback Dev','Comentários','Data']];
+  data.forEach(d => rows.push([d.id, d.discord, d.sugestao, d.descricao || '', d.prioridade || '', d.feedback || '', d.comentario || '', d.data]));
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 6 },{ wch: 22 },{ wch: 30 },{ wch: 40 },{ wch: 14 },{ wch: 14 },{ wch: 16 }];
+  ws['!cols'] = [{ wch:6 },{ wch:22 },{ wch:30 },{ wch:40 },{ wch:14 },{ wch:14 },{ wch:30 },{ wch:16 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Sugestões');
   XLSX.writeFile(wb, 'sugestoes.xlsx');
@@ -217,8 +351,11 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && ['f-discord','f-sug','f-desc'].includes(e.target.id)) addEntry();
 });
 
+window.toggleSelect = toggleSelect;
+window.selectOption = selectOption;
 window.addEntry = addEntry;
 window.deleteEntry = deleteEntry;
+window.confirmDelete = confirmDelete;
 window.updateField = updateField;
 window.clearAll = clearAll;
 window.sortBy = sortBy;
@@ -226,3 +363,7 @@ window.exportExcel = exportExcel;
 window.toggleTheme = toggleTheme;
 window.renderTable = renderTable;
 window.setTab = setTab;
+window.setFilter = setFilter;
+window.clearSearch = clearSearch;
+window.clearFilters = clearFilters;
+window.startEditComment = startEditComment;
