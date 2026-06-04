@@ -18,7 +18,7 @@ let data = [];
 let sortCol = 'id';
 let sortAsc = false;
 let currentTab = 'ativas';
-let activeFilters = { prioridade: '', feedback: '' };
+let activeFilters = { prioridade: [], feedback: [] };
 
 const prioridadeClasse = {
   'Urgente': 'badge-urgente', 'Necessário': 'badge-necessario', 'Inviável': 'badge-inviavel',
@@ -101,7 +101,7 @@ function sortBy(col) {
 
 function setTab(tab) {
   currentTab = tab;
-  activeFilters = { prioridade: '', feedback: '' };
+  activeFilters = { prioridade: [], feedback: [] };
   renderTable();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -113,12 +113,15 @@ function clearSearch() {
 }
 
 function clearFilters() {
-  activeFilters = { prioridade: '', feedback: '' };
+  activeFilters = { prioridade: [], feedback: [] };
   renderTable();
 }
 
 function setFilter(type, value) {
-  activeFilters[type] = activeFilters[type] === value ? '' : value;
+  const arr = activeFilters[type];
+  const idx = arr.indexOf(value);
+  if (idx === -1) arr.push(value);
+  else arr.splice(idx, 1);
   renderTable();
 }
 
@@ -214,13 +217,13 @@ function renderTable() {
   else if (currentTab === 'concluidos') filtered = filtered.filter(d => d.feedback === 'Concluído');
 
   // filtros rápidos
-  if (activeFilters.prioridade) filtered = filtered.filter(d => d.prioridade === activeFilters.prioridade);
-  if (activeFilters.feedback) filtered = filtered.filter(d => d.feedback === activeFilters.feedback);
+  if (activeFilters.prioridade.length) filtered = filtered.filter(d => activeFilters.prioridade.includes(d.prioridade));
+  if (activeFilters.feedback.length) filtered = filtered.filter(d => activeFilters.feedback.includes(d.feedback));
 
   // estado activo dos chips e botão limpar filtros
-  const hasFilters = activeFilters.prioridade || activeFilters.feedback;
+  const hasFilters = activeFilters.prioridade.length || activeFilters.feedback.length;
   document.querySelectorAll('.chip').forEach(chip => {
-    chip.classList.toggle('chip-active', activeFilters[chip.dataset.filter] === chip.dataset.value);
+    chip.classList.toggle('chip-active', activeFilters[chip.dataset.filter].includes(chip.dataset.value));
   });
   const clearAllBtn = document.getElementById('chip-clear-all');
   if (clearAllBtn) clearAllBtn.style.display = hasFilters ? 'inline-block' : 'none';
