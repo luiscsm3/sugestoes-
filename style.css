@@ -292,12 +292,14 @@ input::placeholder { color: var(--text-dim); }
 .table-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
 
 table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   background: var(--surface);
 }
@@ -427,18 +429,24 @@ td.td-actions { width: 40px; text-align: center; }
 .cs-empty { font-size: 11px; color: var(--text-dim); }
 
 .btn-del {
-  background: none;
+  background: #c0392b;
   border: none;
   cursor: pointer;
-  color: var(--text-dim);
-  font-size: 16px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: color .15s, background .15s;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, transform .1s;
   line-height: 1;
+  padding: 0;
 }
 
-.btn-del:hover { color: var(--red); background: var(--red-light); }
+.btn-del:hover { background: #96281b; transform: scale(1.1); }
 
 .empty-row td {
   text-align: center;
