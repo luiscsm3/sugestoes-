@@ -69,78 +69,46 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="form-section">
   <div class="field">
     <label>Discord</label>
-    <input id="f-discord" type="text" placeholder="DiscordUser" />
+    <input id="f-discord" type="text" placeholder="Nome do Discord" />
   </div>
   <div class="field">
     <label>Sugestão</label>
-    <input id="f-sug" type="text" placeholder="Título da sugestão" />
+    <input id="f-sug" type="text" placeholder="Título da Sugestão" />
   </div>
   <div class="field field-wide">
     <label>Descrição</label>
     <input id="f-desc" type="text" placeholder="Detalhes" />
   </div>
+
   <button class="btn-add" onclick="addEntry()">+ Adicionar</button>
 </div>
 
 <div class="toolbar">
-  <div class="search-wrap">
-    <input type="text" id="search" placeholder="Pesquisar" oninput="renderTable()" />
-    <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Limpar pesquisa">×</button>
-  </div>
+  <input type="text" id="search" placeholder="Pesquisar" oninput="renderTable()" />
   <div class="toolbar-right">
-    <button class="btn-excel" onclick="exportExcel()">
-      <img src="excel-icon.svg" width="18" height="18" alt="Excel" />
-      Exportar Excel
-    </button>
-    <button class="btn-clear" onclick="clearAll()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-      Limpar tudo
-    </button>
+    <button class="btn-excel" onclick="exportExcel()">↓ Excel</button>
+    <button class="btn-clear" onclick="clearAll()">Limpar tudo</button>
   </div>
-</div>
-
-<div class="filter-chips">
-  <span class="chips-label">Prioridade:</span>
-  <button class="chip" data-filter="prioridade" data-value="Urgente" onclick="setFilter('prioridade','Urgente')">Urgente</button>
-  <button class="chip" data-filter="prioridade" data-value="Necessário" onclick="setFilter('prioridade','Necessário')">Necessário</button>
-  <button class="chip" data-filter="prioridade" data-value="Não urgente" onclick="setFilter('prioridade','Não urgente')">Não urgente</button>
-  <button class="chip" data-filter="prioridade" data-value="Stand-by" onclick="setFilter('prioridade','Stand-by')">Stand-by</button>
-  <button class="chip" data-filter="prioridade" data-value="Terminado" onclick="setFilter('prioridade','Terminado')">Terminado</button>
-  <button class="chip" data-filter="prioridade" data-value="Inviável" onclick="setFilter('prioridade','Inviável')">Inviável</button>
-  <span class="chips-sep"></span>
-  <span class="chips-label">Estado:</span>
-  <button class="chip" data-filter="feedback" data-value="Em análise" onclick="setFilter('feedback','Em análise')">Em análise</button>
-  <button class="chip" data-filter="feedback" data-value="Em curso" onclick="setFilter('feedback','Em curso')">Em curso</button>
-  <button class="chip" data-filter="feedback" data-value="Em testes" onclick="setFilter('feedback','Em testes')">Em testes</button>
-  <button class="chip" data-filter="feedback" data-value="Update" onclick="setFilter('feedback','Update')">Update</button>
-  <button class="chip" data-filter="feedback" data-value="Concluído" onclick="setFilter('feedback','Concluído')">Concluído</button>
-  <button class="chip" data-filter="feedback" data-value="Recusado" onclick="setFilter('feedback','Recusado')">Recusado</button>
-  <button class="chip" data-filter="feedback" data-value="Stand-by" onclick="setFilter('feedback','Stand-by')">Stand-by</button>
-  <button class="chip" data-filter="feedback" data-value="Sem efeito" onclick="setFilter('feedback','Sem efeito')">Sem efeito</button>
-  <button class="chip" data-filter="feedback" data-value="Sem sentido" onclick="setFilter('feedback','Sem sentido')">Sem sentido</button>
-  <button class="chip-clear-all" id="chip-clear-all" onclick="clearFilters()" style="display:none">× Limpar filtros</button>
 </div>
 
 <div id="status-msg" class="status-msg"></div>
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th onclick="sortBy('id')" id="th-id">ID <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('discord')" id="th-discord">Discord <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('sugestao')" id="th-sugestao">Sugestão <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('descricao')" id="th-descricao">Descrição <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('prioridade')" id="th-prioridade">Prioridade <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('feedback')" id="th-feedback">Feedback Dev <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('comentario')" id="th-comentario">Comentários <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('data')" id="th-data">Data <span class="sort-icon">↕</span></th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</div>
+<table>
+  <thead>
+    <tr>
+      <th onclick="sortBy('id')" id="th-id">ID <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('discord')" id="th-discord">Discord <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('sugestao')" id="th-sugestao">Sugestão <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('descricao')" id="th-descricao">Descrição <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('prioridade')" id="th-prioridade">Prioridade <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('feedback')" id="th-feedback">Feedback Dev <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('comentario')" id="th-comentario">Comentários <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('data')" id="th-data">Data <span class="sort-icon">↕</span></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
 
 <div class="toast" id="toast"></div>
 
