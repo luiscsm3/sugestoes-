@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jordelândia Roleplay — Sugestões</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-icon">⚜</div>
+    <div>
+      <h1>Jordelândia <span>Roleplay</span></h1>
+      <p class="subtitle">Gestão de Sugestões</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="total-badge">0 sugestões</span>
+    <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+  </div>
+</header>
+
+<div class="form-section">
+  <div class="field">
+    <label>Discord</label>
+    <input id="f-discord" type="text" placeholder="utilizador#0000" />
+  </div>
+  <div class="field">
+    <label>Sugestão</label>
+    <input id="f-sug" type="text" placeholder="Título da sugestão" />
+  </div>
+  <div class="field field-wide">
+    <label>Descrição</label>
+    <input id="f-desc" type="text" placeholder="Detalhe opcional..." />
+  </div>
+  <button class="btn-add" onclick="addEntry()">+ Adicionar</button>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="search" placeholder="🔍  Pesquisar..." oninput="renderTable()" />
+  <div class="toolbar-right">
+    <button class="btn-excel" onclick="exportExcel()">↓ Excel</button>
+    <button class="btn-clear" onclick="clearAll()">Limpar tudo</button>
+  </div>
+</div>
+
+<div id="status-msg" class="status-msg"></div>
+
+<table>
+  <thead>
+    <tr>
+      <th onclick="sortBy('id')" id="th-id">ID <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('discord')" id="th-discord">Discord <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('sugestao')" id="th-sugestao">Sugestão <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('descricao')" id="th-descricao">Descrição <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('data')" id="th-data">Data <span class="sort-icon">↕</span></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
