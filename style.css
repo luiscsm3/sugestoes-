@@ -31,6 +31,17 @@
   --success: #4caf7d;
 }
 
+[data-theme="dark"] select,
+[data-theme="dark"] select option {
+  background: #1a1a1a;
+  color: #e8e8e8;
+}
+
+[data-theme="dark"] .select-inline {
+  background: #1a1a1a;
+  color: #e8e8e8;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
