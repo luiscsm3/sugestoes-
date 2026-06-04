@@ -1,35 +1,33 @@
 :root {
-  --bg: #f4f1eb;
+  --bg: #f5f5f5;
   --surface: #ffffff;
-  --surface2: #ede9e0;
-  --border: #c9c0b0;
-  --border-hover: #a89880;
+  --surface2: #ebebeb;
+  --border: #d0cece;
   --accent: #1B2F6E;
   --accent-light: #1B2F6E18;
-  --red: #C0392B;
-  --red-light: #C0392B18;
+  --red: #8B1A1A;
+  --red-light: #8B1A1A18;
   --text: #1a1a1a;
-  --text-muted: #6b6254;
-  --text-dim: #a09888;
+  --text-muted: #5a5a5a;
+  --text-dim: #aaaaaa;
   --success: #2e7d4f;
   --radius: 6px;
-  --font-display: 'Cinzel', serif;
+  --font-display: 'UnifrakturMaguntia', cursive;
   --font-body: 'Inter', sans-serif;
 }
 
 [data-theme="dark"] {
-  --bg: #0e0f13;
-  --surface: #16181f;
-  --surface2: #1e2029;
-  --border: #2a2d3a;
-  --border-hover: #3a3e50;
-  --accent: #4a6fd4;
-  --accent-light: #4a6fd420;
-  --red: #e05555;
-  --red-light: #e0555520;
-  --text: #e8e6e0;
-  --text-muted: #8a8680;
-  --text-dim: #4a4845;
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface2: #222222;
+  --border: #2a2a2a;
+  --accent: #3a5bbf;
+  --accent-light: #3a5bbf20;
+  --red: #9e2a2a;
+  --red-light: #9e2a2a20;
+  --text: #e8e8e8;
+  --text-muted: #888;
+  --text-dim: #444;
   --success: #4caf7d;
 }
 
@@ -56,14 +54,14 @@ header {
 }
 
 .header-left { display: flex; align-items: center; gap: 16px; }
-.logo-icon { font-size: 36px; color: var(--red); line-height: 1; }
+.logo-img { height: 52px; width: auto; object-fit: contain; }
 
 header h1 {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: 32px;
+  font-weight: 400;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 header h1 span { color: var(--red); }
@@ -111,7 +109,7 @@ header h1 span { color: var(--red); }
   padding: 20px 24px;
   margin-bottom: 24px;
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr 2fr auto;
   gap: 12px;
   align-items: end;
   box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -126,6 +124,29 @@ header h1 span { color: var(--red); }
   color: var(--text-muted);
   font-weight: 500;
 }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 24px;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 0.03em;
+}
+
+.tab:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(27,47,110,.25); }
 
 input, select {
   background: var(--bg);
@@ -153,7 +174,7 @@ input::placeholder { color: var(--text-dim); }
   color: #fff;
   border: none;
   border-radius: var(--radius);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
   padding: 9px 20px;
@@ -209,7 +230,7 @@ table {
 thead tr { background: var(--accent); }
 
 th {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -245,7 +266,6 @@ td.td-desc { color: var(--text-muted); }
 td.td-date { font-size: 11px; color: var(--text-dim); white-space: nowrap; width: 110px; }
 td.td-actions { width: 40px; text-align: center; }
 
-/* Badges de prioridade */
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -261,8 +281,6 @@ td.td-actions { width: 40px; text-align: center; }
 .badge-terminado     { background: #2e7d32; color: #fff; }
 .badge-naougente     { background: #1565c0; color: #fff; }
 .badge-standby       { background: #546e7a; color: #fff; }
-
-/* Badges de feedback */
 .badge-emcurso       { background: #00897b; color: #fff; }
 .badge-concluido     { background: #43a047; color: #fff; }
 .badge-recusado      { background: #e53935; color: #fff; }
@@ -273,7 +291,6 @@ td.td-actions { width: 40px; text-align: center; }
 .badge-semsentido    { background: #d81b60; color: #fff; }
 .badge-default       { background: #90a4ae; color: #fff; }
 
-/* Select na tabela */
 .select-inline {
   background: transparent;
   border: 1px solid var(--border);

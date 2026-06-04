@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portugália Roleplay — Sugestões</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
   <div class="header-left">
-    <div class="logo-icon">⚜</div>
+    <img src="Jordelandia_Roleplay.png" class="logo-img" alt="Logo" />
     <div>
-      <h1>Portugália <span>Roleplay</span></h1>
+      <h1>Jordelândia <span>Roleplay</span></h1>
       <p class="subtitle">Gestão de Sugestões</p>
     </div>
   </div>
@@ -23,10 +22,15 @@
   </div>
 </header>
 
+<div class="tabs">
+  <button class="tab active" id="tab-ativas" onclick="setTab('ativas')">Ativas</button>
+  <button class="tab" id="tab-recusadas" onclick="setTab('recusadas')">Recusadas</button>
+</div>
+
 <div class="form-section">
   <div class="field">
     <label>Discord</label>
-    <input id="f-discord" type="text" placeholder="utilizador#0000" />
+    <input id="f-discord" type="text" placeholder="DiscordUser" />
   </div>
   <div class="field">
     <label>Sugestão</label>
@@ -34,40 +38,14 @@
   </div>
   <div class="field field-wide">
     <label>Descrição</label>
-    <input id="f-desc" type="text" placeholder="Detalhe opcional..." />
+    <input id="f-desc" type="text" placeholder="Detalhes" />
   </div>
-  <div class="field">
-    <label>Prioridade</label>
-    <select id="f-prioridade">
-      <option value="">— Selecionar —</option>
-      <option value="Urgente">Urgente</option>
-      <option value="Necessário">Necessário</option>
-      <option value="Inviável">Inviável</option>
-      <option value="Terminado">Terminado</option>
-      <option value="Não urgente">Não urgente</option>
-      <option value="Stand-by">Stand-by</option>
-    </select>
-  </div>
-  <div class="field">
-    <label>Feedback Dev</label>
-    <select id="f-feedback">
-      <option value="">— Selecionar —</option>
-      <option value="Em curso">Em curso</option>
-      <option value="Concluído">Concluído</option>
-      <option value="Recusado">Recusado</option>
-      <option value="Update">Update</option>
-      <option value="Em testes">Em testes</option>
-      <option value="Stand-by">Stand-by</option>
-      <option value="Em análise">Em análise</option>
-      <option value="Sem efeito">Sem efeito</option>
-      <option value="Sem sentido">Sem sentido</option>
-    </select>
-  </div>
+
   <button class="btn-add" onclick="addEntry()">+ Adicionar</button>
 </div>
 
 <div class="toolbar">
-  <input type="text" id="search" placeholder="🔍  Pesquisar..." oninput="renderTable()" />
+  <input type="text" id="search" placeholder="Pesquisar" oninput="renderTable()" />
   <div class="toolbar-right">
     <button class="btn-excel" onclick="exportExcel()">↓ Excel</button>
     <button class="btn-clear" onclick="clearAll()">Limpar tudo</button>

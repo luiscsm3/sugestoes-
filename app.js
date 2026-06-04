@@ -17,6 +17,7 @@ const colRef = collection(db, "sugestoes");
 let data = [];
 let sortCol = 'id';
 let sortAsc = false;
+let currentTab = 'ativas';
 
 const prioridadeClasse = {
   'Urgente': 'badge-urgente',
@@ -49,8 +50,6 @@ async function addEntry() {
   const discord = document.getElementById('f-discord').value.trim();
   const sug = document.getElementById('f-sug').value.trim();
   const desc = document.getElementById('f-desc').value.trim();
-  const prioridade = document.getElementById('f-prioridade').value;
-  const feedback = document.getElementById('f-feedback').value;
   if (!discord || !sug) { toast('Preenche o Discord e a Sugestão.'); return; }
 
   const now = new Date();
@@ -58,13 +57,11 @@ async function addEntry() {
   const nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : 1;
 
   setStatus("A guardar...");
-  await addDoc(colRef, { id: nextId, discord, sugestao: sug, descricao: desc, prioridade, feedback, data: dataStr });
+  await addDoc(colRef, { id: nextId, discord, sugestao: sug, descricao: desc, prioridade: '', feedback: '', data: dataStr });
 
   document.getElementById('f-discord').value = '';
   document.getElementById('f-sug').value = '';
   document.getElementById('f-desc').value = '';
-  document.getElementById('f-prioridade').value = '';
-  document.getElementById('f-feedback').value = '';
   document.getElementById('f-discord').focus();
   toast('Sugestão adicionada!');
 }
@@ -92,6 +89,13 @@ function sortBy(col) {
   renderTable();
 }
 
+function setTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-ativas').classList.toggle('active', tab === 'ativas');
+  document.getElementById('tab-recusadas').classList.toggle('active', tab === 'recusadas');
+  renderTable();
+}
+
 function badgeHtml(value, classeMap) {
   if (!value) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
   const cls = classeMap[value] || 'badge-default';
@@ -116,6 +120,12 @@ function renderTable() {
     (d.prioridade || '').toLowerCase().includes(search) ||
     (d.feedback || '').toLowerCase().includes(search)
   );
+
+  if (currentTab === 'ativas') {
+    filtered = filtered.filter(d => d.feedback !== 'Recusado');
+  } else {
+    filtered = filtered.filter(d => d.feedback === 'Recusado');
+  }
 
   filtered.sort((a, b) => {
     let va = a[sortCol] ?? '', vb = b[sortCol] ?? '';
@@ -214,3 +224,4 @@ window.sortBy = sortBy;
 window.exportExcel = exportExcel;
 window.toggleTheme = toggleTheme;
 window.renderTable = renderTable;
+window.setTab = setTab;
