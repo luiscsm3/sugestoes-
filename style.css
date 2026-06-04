@@ -357,6 +357,9 @@ td.td-actions { width: 40px; text-align: center; }
   font-weight: 500;
 }
 
+#tab-recusadas.active { background: var(--red); border-color: var(--red); }
+#tab-concluidos.active { background: #2e7d4f; border-color: #2e7d4f; }
+
 .toast.show { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 900px) {

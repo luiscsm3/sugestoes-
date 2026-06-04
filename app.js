@@ -37,7 +37,6 @@ const feedbackClasse = {
   'Stand-by': 'badge-standby',
   'Em análise': 'badge-emanalise',
   'Sem efeito': 'badge-semefeito',
-  'Sem sentido': 'badge-semsentido'
 };
 
 onSnapshot(query(colRef, orderBy("id", "asc")), (snapshot) => {
@@ -93,6 +92,7 @@ function setTab(tab) {
   currentTab = tab;
   document.getElementById('tab-ativas').classList.toggle('active', tab === 'ativas');
   document.getElementById('tab-recusadas').classList.toggle('active', tab === 'recusadas');
+  document.getElementById('tab-concluidos').classList.toggle('active', tab === 'concluidos');
   renderTable();
 }
 
@@ -122,11 +122,12 @@ function renderTable() {
   );
 
   if (currentTab === 'ativas') {
-    filtered = filtered.filter(d => d.feedback !== 'Recusado');
-  } else {
+    filtered = filtered.filter(d => d.feedback !== 'Recusado' && d.feedback !== 'Concluído');
+  } else if (currentTab === 'recusadas') {
     filtered = filtered.filter(d => d.feedback === 'Recusado');
+  } else if (currentTab === 'concluidos') {
+    filtered = filtered.filter(d => d.feedback === 'Concluído');
   }
-
   filtered.sort((a, b) => {
     let va = a[sortCol] ?? '', vb = b[sortCol] ?? '';
     if (sortCol === 'id') { va = Number(va); vb = Number(vb); }
