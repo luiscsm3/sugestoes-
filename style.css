@@ -336,7 +336,7 @@ td.td-actions { width: 40px; text-align: center; }
   text-align: center;
   padding: 48px;
   color: var(--text-dim);
-  font-family: var(--font-display);
+  font-family: var(--font---font-body);
   font-size: 13px;
   letter-spacing: 0.05em;
 }
