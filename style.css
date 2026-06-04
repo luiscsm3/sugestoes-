@@ -343,7 +343,7 @@ td {
 
 td.td-id { font-size: 11px; color: var(--text-muted); width: 40px; font-weight: 500; }
 td.td-discord { width: 100px; max-width: 100px; font-weight: 500; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-td.td-sug { width: 120px; max-width: 120px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.td-sug { width: 120px; max-width: 120px; font-weight: 500; white-space: normal; }
 td.td-desc { min-width: 200px; color: var(--text-muted); white-space: normal; }
 td.td-desc { color: var(--text-muted); }
 td.td-date { font-size: 11px; color: var(--text-dim); white-space: nowrap; width: 110px; }
