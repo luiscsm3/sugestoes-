@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jordelândia Roleplay — Sugestões</title>
-<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<title>Portugália Roleplay — Sugestões</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
   <div class="header-left">
     <div class="logo-icon">⚜</div>
     <div>
-      <h1>Jordelândia <span>Roleplay</span></h1>
+      <h1>Portugália <span>Roleplay</span></h1>
       <p class="subtitle">Gestão de Sugestões</p>
     </div>
   </div>
@@ -36,6 +36,33 @@
     <label>Descrição</label>
     <input id="f-desc" type="text" placeholder="Detalhe opcional..." />
   </div>
+  <div class="field">
+    <label>Prioridade</label>
+    <select id="f-prioridade">
+      <option value="">— Selecionar —</option>
+      <option value="Urgente">Urgente</option>
+      <option value="Necessário">Necessário</option>
+      <option value="Inviável">Inviável</option>
+      <option value="Terminado">Terminado</option>
+      <option value="Não urgente">Não urgente</option>
+      <option value="Stand-by">Stand-by</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Feedback Dev</label>
+    <select id="f-feedback">
+      <option value="">— Selecionar —</option>
+      <option value="Em curso">Em curso</option>
+      <option value="Concluído">Concluído</option>
+      <option value="Recusado">Recusado</option>
+      <option value="Update">Update</option>
+      <option value="Em testes">Em testes</option>
+      <option value="Stand-by">Stand-by</option>
+      <option value="Em análise">Em análise</option>
+      <option value="Sem efeito">Sem efeito</option>
+      <option value="Sem sentido">Sem sentido</option>
+    </select>
+  </div>
   <button class="btn-add" onclick="addEntry()">+ Adicionar</button>
 </div>
 
@@ -56,6 +83,8 @@
       <th onclick="sortBy('discord')" id="th-discord">Discord <span class="sort-icon">↕</span></th>
       <th onclick="sortBy('sugestao')" id="th-sugestao">Sugestão <span class="sort-icon">↕</span></th>
       <th onclick="sortBy('descricao')" id="th-descricao">Descrição <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('prioridade')" id="th-prioridade">Prioridade <span class="sort-icon">↕</span></th>
+      <th onclick="sortBy('feedback')" id="th-feedback">Feedback Dev <span class="sort-icon">↕</span></th>
       <th onclick="sortBy('data')" id="th-data">Data <span class="sort-icon">↕</span></th>
       <th></th>
     </tr>

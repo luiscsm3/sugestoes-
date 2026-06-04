@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAbNKlWYSe1rIn1t5yFS8kgJlwWggn5eLQ",
@@ -18,6 +18,27 @@ let data = [];
 let sortCol = 'id';
 let sortAsc = false;
 
+const prioridadeClasse = {
+  'Urgente': 'badge-urgente',
+  'Necessário': 'badge-necessario',
+  'Inviável': 'badge-inviavel',
+  'Terminado': 'badge-terminado',
+  'Não urgente': 'badge-naougente',
+  'Stand-by': 'badge-standby'
+};
+
+const feedbackClasse = {
+  'Em curso': 'badge-emcurso',
+  'Concluído': 'badge-concluido',
+  'Recusado': 'badge-recusado',
+  'Update': 'badge-update',
+  'Em testes': 'badge-emtestes',
+  'Stand-by': 'badge-standby',
+  'Em análise': 'badge-emanalise',
+  'Sem efeito': 'badge-semefeito',
+  'Sem sentido': 'badge-semsentido'
+};
+
 onSnapshot(query(colRef, orderBy("id", "asc")), (snapshot) => {
   data = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
   renderTable();
@@ -28,6 +49,8 @@ async function addEntry() {
   const discord = document.getElementById('f-discord').value.trim();
   const sug = document.getElementById('f-sug').value.trim();
   const desc = document.getElementById('f-desc').value.trim();
+  const prioridade = document.getElementById('f-prioridade').value;
+  const feedback = document.getElementById('f-feedback').value;
   if (!discord || !sug) { toast('Preenche o Discord e a Sugestão.'); return; }
 
   const now = new Date();
@@ -35,13 +58,19 @@ async function addEntry() {
   const nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : 1;
 
   setStatus("A guardar...");
-  await addDoc(colRef, { id: nextId, discord, sugestao: sug, descricao: desc, data: dataStr });
+  await addDoc(colRef, { id: nextId, discord, sugestao: sug, descricao: desc, prioridade, feedback, data: dataStr });
 
   document.getElementById('f-discord').value = '';
   document.getElementById('f-sug').value = '';
   document.getElementById('f-desc').value = '';
+  document.getElementById('f-prioridade').value = '';
+  document.getElementById('f-feedback').value = '';
   document.getElementById('f-discord').focus();
   toast('Sugestão adicionada!');
+}
+
+async function updateField(docId, field, value) {
+  await updateDoc(doc(db, "sugestoes", docId), { [field]: value });
 }
 
 async function deleteEntry(docId) {
@@ -63,6 +92,19 @@ function sortBy(col) {
   renderTable();
 }
 
+function badgeHtml(value, classeMap) {
+  if (!value) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+  const cls = classeMap[value] || 'badge-default';
+  return `<span class="badge ${cls}">${esc(value)}</span>`;
+}
+
+function selectHtml(docId, field, value, options) {
+  const opts = options.map(o => `<option value="${o}" ${value === o ? 'selected' : ''}>${o}</option>`).join('');
+  return `<select class="select-inline" onchange="updateField('${docId}','${field}',this.value)">
+    <option value="">—</option>${opts}
+  </select>`;
+}
+
 function renderTable() {
   const search = (document.getElementById('search')?.value || '').toLowerCase();
   let filtered = data.filter(d =>
@@ -70,7 +112,9 @@ function renderTable() {
     String(d.id).includes(search) ||
     d.discord.toLowerCase().includes(search) ||
     d.sugestao.toLowerCase().includes(search) ||
-    (d.descricao || '').toLowerCase().includes(search)
+    (d.descricao || '').toLowerCase().includes(search) ||
+    (d.prioridade || '').toLowerCase().includes(search) ||
+    (d.feedback || '').toLowerCase().includes(search)
   );
 
   filtered.sort((a, b) => {
@@ -82,7 +126,7 @@ function renderTable() {
     return 0;
   });
 
-  ['id','discord','sugestao','descricao','data'].forEach(c => {
+  ['id','discord','sugestao','descricao','prioridade','feedback','data'].forEach(c => {
     const th = document.getElementById('th-' + c);
     if (!th) return;
     th.classList.toggle('sorted', sortCol === c);
@@ -90,9 +134,12 @@ function renderTable() {
     if (icon) icon.textContent = sortCol === c ? (sortAsc ? '↑' : '↓') : '↕';
   });
 
+  const prioOpts = ['Urgente','Necessário','Inviável','Terminado','Não urgente','Stand-by'];
+  const feedOpts = ['Em curso','Concluído','Recusado','Update','Em testes','Stand-by','Em análise','Sem efeito','Sem sentido'];
+
   const tbody = document.getElementById('tbody');
   if (!filtered.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">— Sem sugestões registadas —</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">— Sem sugestões registadas —</td></tr>';
   } else {
     tbody.innerHTML = filtered.map(d => `
       <tr>
@@ -100,6 +147,8 @@ function renderTable() {
         <td class="td-discord">${esc(d.discord)}</td>
         <td class="td-sug">${esc(d.sugestao)}</td>
         <td class="td-desc">${esc(d.descricao || '—')}</td>
+        <td>${selectHtml(d._docId, 'prioridade', d.prioridade, prioOpts)}</td>
+        <td>${selectHtml(d._docId, 'feedback', d.feedback, feedOpts)}</td>
         <td class="td-date">${d.data}</td>
         <td class="td-actions"><button class="btn-del" onclick="deleteEntry('${d._docId}')" title="Eliminar">×</button></td>
       </tr>
@@ -111,10 +160,10 @@ function renderTable() {
 
 function exportExcel() {
   if (!data.length) { toast('Sem dados para exportar.'); return; }
-  const rows = [['ID', 'Discord', 'Sugestão', 'Descrição', 'Data']];
-  data.forEach(d => rows.push([d.id, d.discord, d.sugestao, d.descricao || '', d.data]));
+  const rows = [['ID','Discord','Sugestão','Descrição','Prioridade','Feedback Dev','Data']];
+  data.forEach(d => rows.push([d.id, d.discord, d.sugestao, d.descricao || '', d.prioridade || '', d.feedback || '', d.data]));
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 6 }, { wch: 22 }, { wch: 30 }, { wch: 40 }, { wch: 16 }];
+  ws['!cols'] = [{ wch: 6 },{ wch: 22 },{ wch: 30 },{ wch: 40 },{ wch: 14 },{ wch: 14 },{ wch: 16 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Sugestões');
   XLSX.writeFile(wb, 'sugestoes.xlsx');
@@ -159,6 +208,7 @@ document.addEventListener('keydown', e => {
 
 window.addEntry = addEntry;
 window.deleteEntry = deleteEntry;
+window.updateField = updateField;
 window.clearAll = clearAll;
 window.sortBy = sortBy;
 window.exportExcel = exportExcel;
