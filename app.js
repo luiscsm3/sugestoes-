@@ -99,13 +99,31 @@ async function confirmDelete(docId) {
   toast('Removido.');
 }
 
-async function clearAll() {
+function clearAll() {
   if (!data.length) return;
-  if (!confirm('Tens a certeza que queres apagar tudo?')) return;
+  document.getElementById('modal1-overlay').style.display = 'flex';
+}
+
+window.showModal2 = function() {
+  document.getElementById('modal1-overlay').style.display = 'none';
+  document.getElementById('modal2-overlay').style.display = 'flex';
+};
+
+window.showModal3 = function() {
+  document.getElementById('modal2-overlay').style.display = 'none';
+  document.getElementById('emergency-overlay').style.display = 'flex';
+};
+
+window.cancelEmergency = function() {
+  document.getElementById('emergency-overlay').style.display = 'none';
+};
+
+window.confirmEmergency = async function() {
+  document.getElementById('emergency-overlay').style.display = 'none';
   setStatus("A apagar...");
   await Promise.all(data.map(d => deleteDoc(doc(db, "sugestoes", d._docId))));
   toast('Tabela limpa.');
-}
+};
 
 function sortBy(col) {
   if (sortCol === col) sortAsc = !sortAsc;

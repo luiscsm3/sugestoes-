@@ -173,6 +173,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="toast" id="toast"></div>
 
+<!-- Modal 1 - Verde -->
+<div id="modal1-overlay" class="confirm-modal" style="display:none">
+  <div class="confirm-modal-box modal-green">
+    <div class="confirm-modal-icon">🗑️</div>
+    <div class="confirm-modal-title">Limpar Dados</div>
+    <div class="confirm-modal-msg">Tens a certeza que queres apagar tudo?</div>
+    <div class="confirm-modal-actions">
+      <button class="cmodal-cancel" onclick="document.getElementById('modal1-overlay').style.display='none'">Cancelar</button>
+      <button class="cmodal-confirm green" onclick="showModal2()">Sim, apagar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2 - Amarelo -->
+<div id="modal2-overlay" class="confirm-modal" style="display:none">
+  <div class="confirm-modal-box modal-yellow">
+    <div class="confirm-modal-icon">⚠️</div>
+    <div class="confirm-modal-title">Respira</div>
+    <div class="confirm-modal-msg">TENS MESMO MESMO MESMO MESMO A CERTEZA?</div>
+    <div class="confirm-modal-actions">
+      <button class="cmodal-cancel" onclick="document.getElementById('modal2-overlay').style.display='none'">Cancelar</button>
+      <button class="cmodal-confirm yellow" onclick="showModal3()">Sim, tenho</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3 - Vermelho Emergência -->
+<div id="emergency-overlay" class="emergency-overlay" style="display:none">
+  <div class="emergency-box">
+    <div class="emergency-lights">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="emergency-icon">⚠️</div>
+    <div class="emergency-title">VAMOS TER CALMA PARCEIRO</div>
+    <div class="emergency-msg">SE APAGARES ÉS<br><strong>HOMO SAPIENS</strong></div>
+    <div class="emergency-actions">
+      <button class="emergency-cancel" onclick="cancelEmergency()">Cancelar</button>
+      <button class="emergency-confirm" onclick="confirmEmergency()">Sou Homo Sapiens</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
