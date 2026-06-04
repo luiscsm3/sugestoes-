@@ -13,8 +13,26 @@
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('table');
   const cols = table.querySelectorAll('th');
+  const STORAGE_KEY = 'col-widths';
 
-  cols.forEach(col => {
+  // restaurar larguras guardadas
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  cols.forEach((col, i) => {
+    if (saved[i]) {
+      col.style.width = saved[i];
+      col.style.minWidth = saved[i];
+    }
+  });
+
+  function saveWidths() {
+    const widths = {};
+    cols.forEach((col, i) => { if (col.style.width) widths[i] = col.style.width; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(widths));
+  }
+
+  let didResize = false;
+
+  cols.forEach((col, i) => {
     const resizer = document.createElement('div');
     resizer.classList.add('resizer');
     col.appendChild(resizer);
@@ -22,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let x = 0, w = 0;
 
     resizer.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      didResize = false;
       x = e.clientX;
       w = col.offsetWidth;
       resizer.classList.add('active');
@@ -29,7 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.addEventListener('mouseup', onMouseUp);
     });
 
+    resizer.addEventListener('click', (e) => e.stopPropagation());
+
     function onMouseMove(e) {
+      didResize = true;
       const diff = e.clientX - x;
       col.style.width = (w + diff) + 'px';
       col.style.minWidth = (w + diff) + 'px';
@@ -39,6 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
       resizer.classList.remove('active');
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      if (didResize) saveWidths();
+      // bloqueia o click seguinte no th se houve resize
+      if (didResize) {
+        col.addEventListener('click', (e) => e.stopPropagation(), { once: true, capture: true });
+      }
     }
   });
 });
