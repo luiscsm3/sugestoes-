@@ -406,8 +406,6 @@ td.td-actions { width: 40px; text-align: center; }
   border-radius: var(--radius);
   box-shadow: 0 6px 20px rgba(0,0,0,.15);
   z-index: 9999;
-  overflow-y: auto;
-  max-height: 280px;
   animation: dropdown-in .1s ease;
 }
 

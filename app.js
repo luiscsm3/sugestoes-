@@ -184,9 +184,28 @@ function toggleSelect(trigger) {
     cs.classList.add('cs-open');
     const rect = trigger.getBoundingClientRect();
     const dropdown = cs.querySelector('.cs-dropdown');
-    dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
-    dropdown.style.left = (rect.left + window.scrollX) + 'px';
     dropdown.style.minWidth = Math.max(rect.width, 150) + 'px';
+    dropdown.style.left = (rect.left + window.scrollX) + 'px';
+    dropdown.style.top = '';
+    dropdown.style.bottom = '';
+
+    // posiciona temporariamente para medir altura
+    dropdown.style.visibility = 'hidden';
+    dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+
+    requestAnimationFrame(() => {
+      const dh = dropdown.offsetHeight;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < dh + 8 && spaceAbove > spaceBelow) {
+        // abre para cima
+        dropdown.style.top = (rect.top + window.scrollY - dh - 4) + 'px';
+      } else {
+        dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+      }
+      dropdown.style.visibility = '';
+    });
   }
 }
 
