@@ -33,6 +33,20 @@ const feedbackClasse = {
 
 const prioOrder = { 'Urgente': 0, 'Necessário': 1, 'Não urgente': 2, 'Stand-by': 3, 'Terminado': 4, 'Inviável': 5, '': 99 };
 
+function isConcluido(d) {
+  return d.prioridade === 'Terminado' && d.feedback === 'Concluído';
+}
+
+function isRecusado(d) {
+  if (d.prioridade === 'Terminado' && ['Recusado','Sem efeito','Sem sentido'].includes(d.feedback)) return true;
+  if (d.prioridade === 'Inviável' && ['Recusado','Concluído','Sem efeito','Sem sentido'].includes(d.feedback)) return true;
+  return false;
+}
+
+function isAtiva(d) {
+  return !isConcluido(d) && !isRecusado(d);
+}
+
 onSnapshot(query(colRef, orderBy("id", "asc")), (snapshot) => {
   data = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
   renderTable();
@@ -199,9 +213,9 @@ function renderTable() {
 
   // contadores dos tabs
   const counts = {
-    ativas: filtered.filter(d => d.feedback !== 'Recusado' && d.feedback !== 'Concluído').length,
-    recusadas: filtered.filter(d => d.feedback === 'Recusado').length,
-    concluidos: filtered.filter(d => d.feedback === 'Concluído').length,
+    ativas: filtered.filter(isAtiva).length,
+    recusadas: filtered.filter(isRecusado).length,
+    concluidos: filtered.filter(isConcluido).length,
   };
   ['ativas','recusadas','concluidos'].forEach(t => {
     const el = document.getElementById('tab-' + t);
@@ -212,9 +226,9 @@ function renderTable() {
   });
 
   // filtro por tab
-  if (currentTab === 'ativas') filtered = filtered.filter(d => d.feedback !== 'Recusado' && d.feedback !== 'Concluído');
-  else if (currentTab === 'recusadas') filtered = filtered.filter(d => d.feedback === 'Recusado');
-  else if (currentTab === 'concluidos') filtered = filtered.filter(d => d.feedback === 'Concluído');
+  if (currentTab === 'ativas') filtered = filtered.filter(isAtiva);
+  else if (currentTab === 'recusadas') filtered = filtered.filter(isRecusado);
+  else if (currentTab === 'concluidos') filtered = filtered.filter(isConcluido);
 
   // filtros rápidos
   if (activeFilters.prioridade.length) filtered = filtered.filter(d => activeFilters.prioridade.includes(d.prioridade));
