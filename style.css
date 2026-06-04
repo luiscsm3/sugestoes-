@@ -339,9 +339,10 @@ td {
   line-height: 1.5;
 }
 
-td.td-id { font-size: 11px; color: var(--text-muted); width: 50px; font-weight: 500; }
-td.td-discord { width: 140px; font-weight: 500; color: var(--accent); }
-td.td-sug { min-width: 160px; font-weight: 500; }
+td.td-id { font-size: 11px; color: var(--text-muted); width: 40px; font-weight: 500; }
+td.td-discord { width: 100px; max-width: 100px; font-weight: 500; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.td-sug { width: 120px; max-width: 120px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.td-desc { min-width: 200px; color: var(--text-muted); white-space: normal; }
 td.td-desc { color: var(--text-muted); }
 td.td-date { font-size: 11px; color: var(--text-dim); white-space: nowrap; width: 110px; }
 td.td-actions { width: 40px; text-align: center; }
