@@ -19,7 +19,6 @@
     --text: #e8e8e8;
     --text-muted: #888;
     --text-dim: #444;
-    --success: #2e7d4f;
     --radius: 8px;
   }
 
@@ -31,7 +30,7 @@
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     min-height: 100vh;
-    padding: 24px 32px;
+    padding: 20px 32px;
   }
 
   header {
@@ -39,8 +38,8 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid var(--accent);
-    padding-bottom: 12px;
-    margin-bottom: 28px;
+    padding-bottom: 10px;
+    margin-bottom: 24px;
   }
 
   .header-left { display: flex; align-items: center; gap: 12px; }
@@ -50,6 +49,9 @@
     font-family: 'UnifrakturMaguntia', cursive;
     font-size: 28px;
     color: var(--accent);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
   }
 
   h1 span {
@@ -57,7 +59,6 @@
     font-size: 16px;
     font-style: italic;
     color: var(--red);
-    margin-left: 8px;
   }
 
   .subtitle {
@@ -82,19 +83,18 @@
   }
   .nav-link:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* Cards de resumo */
   .cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 28px;
+    gap: 14px;
+    margin-bottom: 20px;
   }
 
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px 24px;
+    padding: 18px 22px;
     position: relative;
     overflow: hidden;
   }
@@ -109,22 +109,22 @@
   .card-total::before  { background: var(--accent); }
   .card-ativas::before { background: #1e88e5; }
   .card-ok::before     { background: #2e7d4f; }
-  .card-rec::before    { background: var(--red); }
+  .card-rec::before    { background: #e53935; }
 
   .card-label {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: .12em;
     color: var(--text-muted);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-weight: 500;
   }
 
   .card-value {
-    font-size: 42px;
+    font-size: 40px;
     font-weight: 700;
     line-height: 1;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .card-total  .card-value { color: var(--accent); }
@@ -132,39 +132,29 @@
   .card-ok     .card-value { color: #2e7d4f; }
   .card-rec    .card-value { color: #e53935; }
 
-  .card-pct {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
+  .card-pct { font-size: 12px; color: var(--text-muted); }
 
-  /* Gráficos */
   .charts-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .charts-grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
+    gap: 14px;
+    margin-bottom: 14px;
   }
 
   .chart-box {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px 24px;
+    padding: 18px 22px;
   }
 
   .chart-title {
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: .12em;
     color: var(--text-muted);
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 
   .chart-wrap {
@@ -175,78 +165,31 @@
     justify-content: center;
   }
 
-  /* Top utilizadores */
-  .user-list { display: flex; flex-direction: column; gap: 8px; }
+  .user-list { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
 
-  .user-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .user-row { display: flex; align-items: center; gap: 10px; }
 
-  .user-rank {
-    font-size: 10px;
-    color: var(--text-dim);
-    width: 16px;
-    text-align: right;
-    flex-shrink: 0;
-  }
+  .user-rank { font-size: 10px; color: var(--text-dim); width: 16px; text-align: right; flex-shrink: 0; }
 
   .user-avatar {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
   }
 
-  .user-name {
-    flex: 1;
-    font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  .user-name { flex: 1; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .user-bar-wrap {
-    flex: 2;
-    background: var(--surface2);
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-  }
+  .user-bar-wrap { flex: 2; background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
 
-  .user-bar {
-    height: 100%;
-    border-radius: 4px;
-    background: var(--accent);
-    transition: width .6s ease;
-  }
+  .user-bar { height: 100%; border-radius: 4px; background: var(--accent); }
 
-  .user-count {
-    font-size: 11px;
-    color: var(--text-muted);
-    width: 24px;
-    text-align: right;
-    flex-shrink: 0;
-  }
+  .user-count { font-size: 11px; color: var(--text-muted); width: 24px; text-align: right; flex-shrink: 0; }
 
-  .loading {
-    text-align: center;
-    color: var(--text-dim);
-    padding: 60px;
-    font-size: 13px;
-    letter-spacing: .1em;
-  }
+  .loading { text-align: center; color: var(--text-dim); padding: 80px; font-size: 13px; letter-spacing: .1em; }
 
   @media (max-width: 900px) {
     .cards { grid-template-columns: 1fr 1fr; }
-    .charts-grid, .charts-grid-3 { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -260,94 +203,123 @@
       <p class="subtitle">Estatísticas de Sugestões</p>
     </div>
   </div>
-  <a href="/index.html" class="nav-link">← Voltar à tabela</a>
+  <a href="index.html" class="nav-link">← Voltar à tabela</a>
 </header>
 
 <div id="app">
   <p class="loading">A carregar estatísticas...</p>
 </div>
 
-<script>
-const COLORS = {
-  prioridade: {
-    'Urgente':     '#e53935',
-    'Necessário':  '#f9a825',
-    'Não urgente': '#1565c0',
-    'Stand-by':    '#546e7a',
-    'Terminado':   '#2e7d32',
-    'Inviável':    '#c62828',
-    'Sem prioridade': '#444',
-  },
-  feedback: {
-    'Em curso':    '#00897b',
-    'Concluído':   '#43a047',
-    'Recusado':    '#e53935',
-    'Update':      '#1e88e5',
-    'Em testes':   '#8e24aa',
-    'Stand-by':    '#546e7a',
-    'Em análise':  '#fb8c00',
-    'Sem efeito':  '#f4511e',
-    'Sem sentido': '#d81b60',
-    'Sem feedback':'#444',
-  }
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAbNKlWYSe1rIn1t5yFS8kgJlwWggn5eLQ",
+  authDomain: "sugestoes-f03d9.firebaseapp.com",
+  projectId: "sugestoes-f03d9",
+  storageBucket: "sugestoes-f03d9.firebasestorage.app",
+  messagingSenderId: "640972402801",
+  appId: "1:640972402801:web:c1aaf57020fb7e1f05abd0"
 };
 
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const COLORS_PRIO = {
+  'Urgente':'#e53935','Necessário':'#f9a825','Não urgente':'#1565c0',
+  'Stand-by':'#546e7a','Terminado':'#2e7d32','Inviável':'#c62828','Sem prioridade':'#444'
+};
+const COLORS_FEED = {
+  'Em curso':'#00897b','Concluído':'#43a047','Recusado':'#e53935',
+  'Update':'#1e88e5','Em testes':'#8e24aa','Stand-by':'#546e7a',
+  'Em análise':'#fb8c00','Sem efeito':'#f4511e','Sem sentido':'#d81b60','Sem feedback':'#444'
+};
 const AVATAR_COLORS = ['#1B2F6E','#2e7d4f','#8B1A1A','#00897b','#8e24aa','#c0392b','#1565c0','#546e7a'];
+
 function avatarColor(name) {
-  let hash = 0;
-  for (const c of name) hash = (hash * 31 + c.charCodeAt(0)) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[Math.abs(hash)];
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[Math.abs(h)];
 }
+
+const isConcluido = d => d.prioridade === 'Terminado' && d.feedback === 'Concluído';
+const isRecusado  = d => {
+  if (d.prioridade === 'Terminado' && ['Recusado','Sem efeito','Sem sentido'].includes(d.feedback)) return true;
+  if (d.prioridade === 'Inviável'  && ['Recusado','Concluído','Sem efeito','Sem sentido'].includes(d.feedback)) return true;
+  return false;
+};
+const isAtiva = d => !isConcluido(d) && !isRecusado(d);
 
 Chart.defaults.color = '#888';
 Chart.defaults.borderColor = '#2a2a2a';
 Chart.defaults.font.family = 'Inter';
 
-async function load() {
-  const res  = await fetch('/api/stats');
-  const data = await res.json();
+try {
+  const snapshot  = await getDocs(collection(db, "sugestoes"));
+  const sugestoes = snapshot.docs.map(d => d.data());
+  const total     = sugestoes.length;
+  const ativas    = sugestoes.filter(isAtiva).length;
+  const concluidas = sugestoes.filter(isConcluido).length;
+  const recusadas  = sugestoes.filter(isRecusado).length;
+  const pct = n => total ? Math.round(n / total * 100) : 0;
 
-  const pct = n => data.total ? Math.round(n / data.total * 100) : 0;
+  const porPrioridade = {};
+  const porFeedback   = {};
+  const porUser       = {};
+
+  sugestoes.forEach(d => {
+    const p = d.prioridade || 'Sem prioridade';
+    const f = d.feedback   || 'Sem feedback';
+    const u = d.discord    || 'Desconhecido';
+    porPrioridade[p] = (porPrioridade[p] || 0) + 1;
+    porFeedback[f]   = (porFeedback[f]   || 0) + 1;
+    porUser[u]       = (porUser[u]       || 0) + 1;
+  });
+
+  const topUsers = Object.entries(porUser)
+    .sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([nome, count]) => ({ nome, count }));
 
   document.getElementById('app').innerHTML = `
     <div class="cards">
       <div class="card card-total">
         <div class="card-label">Total de Sugestões</div>
-        <div class="card-value">${data.total}</div>
+        <div class="card-value">${total}</div>
         <div class="card-pct">registadas</div>
       </div>
       <div class="card card-ativas">
         <div class="card-label">Ativas</div>
-        <div class="card-value">${data.ativas}</div>
-        <div class="card-pct">${pct(data.ativas)}% do total</div>
+        <div class="card-value">${ativas}</div>
+        <div class="card-pct">${pct(ativas)}% do total</div>
       </div>
       <div class="card card-ok">
         <div class="card-label">Concluídas</div>
-        <div class="card-value">${data.concluidas}</div>
-        <div class="card-pct">${pct(data.concluidas)}% do total</div>
+        <div class="card-value">${concluidas}</div>
+        <div class="card-pct">${pct(concluidas)}% do total</div>
       </div>
       <div class="card card-rec">
         <div class="card-label">Recusadas</div>
-        <div class="card-value">${data.recusadas}</div>
-        <div class="card-pct">${pct(data.recusadas)}% do total</div>
+        <div class="card-value">${recusadas}</div>
+        <div class="card-pct">${pct(recusadas)}% do total</div>
       </div>
     </div>
 
-    <div class="charts-grid" style="margin-bottom:16px">
+    <div class="charts-grid">
       <div class="chart-box">
         <div class="chart-title">Estado Geral</div>
-        <div class="chart-wrap"><canvas id="chart-estado"></canvas></div>
+        <div class="chart-wrap"><canvas id="c-estado"></canvas></div>
       </div>
       <div class="chart-box">
         <div class="chart-title">Por Prioridade</div>
-        <div class="chart-wrap"><canvas id="chart-prio"></canvas></div>
+        <div class="chart-wrap"><canvas id="c-prio"></canvas></div>
       </div>
     </div>
 
-    <div class="charts-grid" style="margin-bottom:16px">
+    <div class="charts-grid">
       <div class="chart-box">
         <div class="chart-title">Por Feedback Dev</div>
-        <div class="chart-wrap"><canvas id="chart-feed"></canvas></div>
+        <div class="chart-wrap"><canvas id="c-feed"></canvas></div>
       </div>
       <div class="chart-box">
         <div class="chart-title">Top Utilizadores</div>
@@ -356,89 +328,61 @@ async function load() {
     </div>
   `;
 
-  // Gráfico estado
-  new Chart(document.getElementById('chart-estado'), {
+  // Estado geral — donut
+  new Chart(document.getElementById('c-estado'), {
     type: 'doughnut',
     data: {
-      labels: ['Ativas', 'Concluídas', 'Recusadas'],
-      datasets: [{
-        data: [data.ativas, data.concluidas, data.recusadas],
+      labels: ['Ativas','Concluídas','Recusadas'],
+      datasets: [{ data: [ativas, concluidas, recusadas],
         backgroundColor: ['#1e88e5','#2e7d4f','#e53935'],
-        borderWidth: 2,
-        borderColor: '#1a1a1a',
-      }]
+        borderWidth: 2, borderColor: '#1a1a1a' }]
     },
-    options: {
-      plugins: { legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } } },
-      cutout: '65%',
-    }
+    options: { cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } } } }
   });
 
-  // Gráfico prioridade
-  const prioLabels = Object.keys(data.porPrioridade);
-  const prioCores  = prioLabels.map(l => COLORS.prioridade[l] || '#90a4ae');
-  new Chart(document.getElementById('chart-prio'), {
+  // Prioridade — barras verticais
+  const prioL = Object.keys(porPrioridade);
+  new Chart(document.getElementById('c-prio'), {
     type: 'bar',
     data: {
-      labels: prioLabels,
-      datasets: [{
-        data: Object.values(data.porPrioridade),
-        backgroundColor: prioCores,
-        borderRadius: 4,
-        borderSkipped: false,
-      }]
+      labels: prioL,
+      datasets: [{ data: Object.values(porPrioridade),
+        backgroundColor: prioL.map(l => COLORS_PRIO[l] || '#90a4ae'),
+        borderRadius: 4, borderSkipped: false }]
     },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } },
-        x: { grid: { display: false } }
-      }
-    }
+    options: { plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } }, x: { grid: { display: false } } } }
   });
 
-  // Gráfico feedback
-  const feedLabels = Object.keys(data.porFeedback);
-  const feedCores  = feedLabels.map(l => COLORS.feedback[l] || '#90a4ae');
-  new Chart(document.getElementById('chart-feed'), {
+  // Feedback — barras horizontais
+  const feedL = Object.keys(porFeedback);
+  new Chart(document.getElementById('c-feed'), {
     type: 'bar',
     data: {
-      labels: feedLabels,
-      datasets: [{
-        data: Object.values(data.porFeedback),
-        backgroundColor: feedCores,
-        borderRadius: 4,
-        borderSkipped: false,
-      }]
+      labels: feedL,
+      datasets: [{ data: Object.values(porFeedback),
+        backgroundColor: feedL.map(l => COLORS_FEED[l] || '#90a4ae'),
+        borderRadius: 4, borderSkipped: false }]
     },
-    options: {
-      indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } },
-        y: { grid: { display: false } }
-      }
-    }
+    options: { indexAxis: 'y', plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } }, y: { grid: { display: false } } } }
   });
 
   // Top utilizadores
-  const maxCount = data.topUsers[0]?.count || 1;
-  document.getElementById('user-list').innerHTML = data.topUsers.map((u, i) => `
+  const maxC = topUsers[0]?.count || 1;
+  document.getElementById('user-list').innerHTML = topUsers.map((u, i) => `
     <div class="user-row">
       <div class="user-rank">${i + 1}</div>
       <div class="user-avatar" style="background:${avatarColor(u.nome)}">${u.nome.charAt(0).toUpperCase()}</div>
       <div class="user-name">${u.nome}</div>
-      <div class="user-bar-wrap">
-        <div class="user-bar" style="width:${Math.round(u.count / maxCount * 100)}%"></div>
-      </div>
+      <div class="user-bar-wrap"><div class="user-bar" style="width:${Math.round(u.count/maxC*100)}%"></div></div>
       <div class="user-count">${u.count}</div>
     </div>
   `).join('');
-}
 
-load().catch(err => {
-  document.getElementById('app').innerHTML = `<p class="loading">Erro ao carregar: ${err.message}</p>`;
-});
+} catch(err) {
+  document.getElementById('app').innerHTML = `<p class="loading">Erro: ${err.message}</p>`;
+}
 </script>
 </body>
 </html>
