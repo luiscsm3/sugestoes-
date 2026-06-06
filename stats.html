@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jordelândia — Estatísticas</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222;
+    --border: #2a2a2a;
+    --accent: #3a5bbf;
+    --accent-light: #3a5bbf22;
+    --red: #9e2a2a;
+    --text: #e8e8e8;
+    --text-muted: #888;
+    --text-dim: #444;
+    --success: #2e7d4f;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 24px 32px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 12px;
+    margin-bottom: 28px;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-img { height: 36px; }
+
+  h1 {
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 28px;
+    color: var(--accent);
+  }
+
+  h1 span {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--red);
+    margin-left: 8px;
+  }
+
+  .subtitle {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav-link {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 16px;
+    text-decoration: none;
+    transition: all .15s;
+  }
+  .nav-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Cards de resumo */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .card-total::before  { background: var(--accent); }
+  .card-ativas::before { background: #1e88e5; }
+  .card-ok::before     { background: #2e7d4f; }
+  .card-rec::before    { background: var(--red); }
+
+  .card-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .card-value {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .card-total  .card-value { color: var(--accent); }
+  .card-ativas .card-value { color: #1e88e5; }
+  .card-ok     .card-value { color: #2e7d4f; }
+  .card-rec    .card-value { color: #e53935; }
+
+  .card-pct {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Gráficos */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .charts-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+
+  .chart-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Top utilizadores */
+  .user-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-rank {
+    font-size: 10px;
+    color: var(--text-dim);
+    width: 16px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .user-name {
+    flex: 1;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-bar-wrap {
+    flex: 2;
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .user-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width .6s ease;
+  }
+
+  .user-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    width: 24px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .loading {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 60px;
+    font-size: 13px;
+    letter-spacing: .1em;
+  }
+
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+    .charts-grid, .charts-grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <img src="Jordelandia_Roleplay.png" class="logo-img" alt="Logo" />
+    <div>
+      <h1>Jordelândia <span>Roleplay</span></h1>
+      <p class="subtitle">Estatísticas de Sugestões</p>
+    </div>
+  </div>
+  <a href="/index.html" class="nav-link">← Voltar à tabela</a>
+</header>
+
+<div id="app">
+  <p class="loading">A carregar estatísticas...</p>
+</div>
+
+<script>
+const COLORS = {
+  prioridade: {
+    'Urgente':     '#e53935',
+    'Necessário':  '#f9a825',
+    'Não urgente': '#1565c0',
+    'Stand-by':    '#546e7a',
+    'Terminado':   '#2e7d32',
+    'Inviável':    '#c62828',
+    'Sem prioridade': '#444',
+  },
+  feedback: {
+    'Em curso':    '#00897b',
+    'Concluído':   '#43a047',
+    'Recusado':    '#e53935',
+    'Update':      '#1e88e5',
+    'Em testes':   '#8e24aa',
+    'Stand-by':    '#546e7a',
+    'Em análise':  '#fb8c00',
+    'Sem efeito':  '#f4511e',
+    'Sem sentido': '#d81b60',
+    'Sem feedback':'#444',
+  }
+};
+
+const AVATAR_COLORS = ['#1B2F6E','#2e7d4f','#8B1A1A','#00897b','#8e24aa','#c0392b','#1565c0','#546e7a'];
+function avatarColor(name) {
+  let hash = 0;
+  for (const c of name) hash = (hash * 31 + c.charCodeAt(0)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[Math.abs(hash)];
+}
+
+Chart.defaults.color = '#888';
+Chart.defaults.borderColor = '#2a2a2a';
+Chart.defaults.font.family = 'Inter';
+
+async function load() {
+  const res  = await fetch('/api/stats');
+  const data = await res.json();
+
+  const pct = n => data.total ? Math.round(n / data.total * 100) : 0;
+
+  document.getElementById('app').innerHTML = `
+    <div class="cards">
+      <div class="card card-total">
+        <div class="card-label">Total de Sugestões</div>
+        <div class="card-value">${data.total}</div>
+        <div class="card-pct">registadas</div>
+      </div>
+      <div class="card card-ativas">
+        <div class="card-label">Ativas</div>
+        <div class="card-value">${data.ativas}</div>
+        <div class="card-pct">${pct(data.ativas)}% do total</div>
+      </div>
+      <div class="card card-ok">
+        <div class="card-label">Concluídas</div>
+        <div class="card-value">${data.concluidas}</div>
+        <div class="card-pct">${pct(data.concluidas)}% do total</div>
+      </div>
+      <div class="card card-rec">
+        <div class="card-label">Recusadas</div>
+        <div class="card-value">${data.recusadas}</div>
+        <div class="card-pct">${pct(data.recusadas)}% do total</div>
+      </div>
+    </div>
+
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-box">
+        <div class="chart-title">Estado Geral</div>
+        <div class="chart-wrap"><canvas id="chart-estado"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Por Prioridade</div>
+        <div class="chart-wrap"><canvas id="chart-prio"></canvas></div>
+      </div>
+    </div>
+
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-box">
+        <div class="chart-title">Por Feedback Dev</div>
+        <div class="chart-wrap"><canvas id="chart-feed"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Top Utilizadores</div>
+        <div class="user-list" id="user-list"></div>
+      </div>
+    </div>
+  `;
+
+  // Gráfico estado
+  new Chart(document.getElementById('chart-estado'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Ativas', 'Concluídas', 'Recusadas'],
+      datasets: [{
+        data: [data.ativas, data.concluidas, data.recusadas],
+        backgroundColor: ['#1e88e5','#2e7d4f','#e53935'],
+        borderWidth: 2,
+        borderColor: '#1a1a1a',
+      }]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } } },
+      cutout: '65%',
+    }
+  });
+
+  // Gráfico prioridade
+  const prioLabels = Object.keys(data.porPrioridade);
+  const prioCores  = prioLabels.map(l => COLORS.prioridade[l] || '#90a4ae');
+  new Chart(document.getElementById('chart-prio'), {
+    type: 'bar',
+    data: {
+      labels: prioLabels,
+      datasets: [{
+        data: Object.values(data.porPrioridade),
+        backgroundColor: prioCores,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Gráfico feedback
+  const feedLabels = Object.keys(data.porFeedback);
+  const feedCores  = feedLabels.map(l => COLORS.feedback[l] || '#90a4ae');
+  new Chart(document.getElementById('chart-feed'), {
+    type: 'bar',
+    data: {
+      labels: feedLabels,
+      datasets: [{
+        data: Object.values(data.porFeedback),
+        backgroundColor: feedCores,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Top utilizadores
+  const maxCount = data.topUsers[0]?.count || 1;
+  document.getElementById('user-list').innerHTML = data.topUsers.map((u, i) => `
+    <div class="user-row">
+      <div class="user-rank">${i + 1}</div>
+      <div class="user-avatar" style="background:${avatarColor(u.nome)}">${u.nome.charAt(0).toUpperCase()}</div>
+      <div class="user-name">${u.nome}</div>
+      <div class="user-bar-wrap">
+        <div class="user-bar" style="width:${Math.round(u.count / maxCount * 100)}%"></div>
+      </div>
+      <div class="user-count">${u.count}</div>
+    </div>
+  `).join('');
+}
+
+load().catch(err => {
+  document.getElementById('app').innerHTML = `<p class="loading">Erro ao carregar: ${err.message}</p>`;
+});
+</script>
+</body>
+</html>
