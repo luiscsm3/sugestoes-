@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt" data-theme="dark">
+<html lang="pt">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
+  :root, [data-theme="dark"] {
     --bg: #0f0f0f;
     --surface: #1a1a1a;
     --surface2: #222;
@@ -20,6 +20,19 @@
     --text-muted: #888;
     --text-dim: #444;
     --radius: 8px;
+  }
+
+  [data-theme="light"] {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --surface2: #ebebeb;
+    --border: #d0cece;
+    --accent: #1B2F6E;
+    --accent-light: #1B2F6E18;
+    --red: #8B1A1A;
+    --text: #1a1a1a;
+    --text-muted: #5a5a5a;
+    --text-dim: #aaaaaa;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -203,12 +216,44 @@
       <p class="subtitle">Estatísticas de Sugestões</p>
     </div>
   </div>
-  <a href="index.html" class="nav-link">← Voltar à tabela</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="nav-link" id="btn-theme-stats" onclick="toggleThemeStats()" style="cursor:pointer;border:1px solid var(--border);">🌙</button>
+    <a href="index.html" class="nav-link">← Voltar à tabela</a>
+  </div>
 </header>
 
 <div id="app">
   <p class="loading">A carregar estatísticas...</p>
 </div>
+
+<script>
+  // Tema sincronizado com o index
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-theme-stats');
+    if (btn) btn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+  });
+
+  function toggleThemeStats() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('btn-theme-stats').textContent = isDark ? '🌙' : '☀️';
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  }
+
+  function animateCount(el, target, duration = 1200) {
+    const start = performance.now();
+    const update = (now) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+</script>
 
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -285,22 +330,22 @@ try {
     <div class="cards">
       <div class="card card-total">
         <div class="card-label">Total de Sugestões</div>
-        <div class="card-value">${total}</div>
+        <div class="card-value" id="cv-total">0</div>
         <div class="card-pct">registadas</div>
       </div>
       <div class="card card-ativas">
         <div class="card-label">Ativas</div>
-        <div class="card-value">${ativas}</div>
+        <div class="card-value" id="cv-ativas">0</div>
         <div class="card-pct">${pct(ativas)}% do total</div>
       </div>
       <div class="card card-ok">
         <div class="card-label">Concluídas</div>
-        <div class="card-value">${concluidas}</div>
+        <div class="card-value" id="cv-conc">0</div>
         <div class="card-pct">${pct(concluidas)}% do total</div>
       </div>
       <div class="card card-rec">
         <div class="card-label">Recusadas</div>
-        <div class="card-value">${recusadas}</div>
+        <div class="card-value" id="cv-rec">0</div>
         <div class="card-pct">${pct(recusadas)}% do total</div>
       </div>
     </div>
@@ -326,7 +371,24 @@ try {
         <div class="user-list" id="user-list"></div>
       </div>
     </div>
+
+    <div class="charts-grid" style="margin-bottom:14px">
+      <div class="chart-box">
+        <div class="chart-title">Evolução de Sugestões</div>
+        <div class="chart-wrap"><canvas id="c-timeline"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Taxa de Conclusão</div>
+        <div id="completion-wrap" style="padding-top:8px"></div>
+      </div>
+    </div>
   `;
+
+  // Count-up animado
+  animateCount(document.getElementById('cv-total'), total);
+  animateCount(document.getElementById('cv-ativas'), ativas, 1000);
+  animateCount(document.getElementById('cv-conc'), concluidas, 900);
+  animateCount(document.getElementById('cv-rec'), recusadas, 800);
 
   // Estado geral — donut
   new Chart(document.getElementById('c-estado'), {
@@ -379,6 +441,72 @@ try {
       <div class="user-count">${u.count}</div>
     </div>
   `).join('');
+
+  // Timeline
+  const porDia = {};
+  sugestoes.forEach(d => {
+    if (!d.data) return;
+    const dia = d.data.split(' ')[0];
+    porDia[dia] = (porDia[dia] || 0) + 1;
+  });
+  const sortedDays = Object.keys(porDia).sort((a, b) => {
+    const [da,ma,ya] = a.split('/').map(Number);
+    const [db,mb,yb] = b.split('/').map(Number);
+    return new Date(ya, ma-1, da) - new Date(yb, mb-1, db);
+  });
+  // acumulado
+  let acc = 0;
+  const accData = sortedDays.map(d => { acc += porDia[d]; return acc; });
+  new Chart(document.getElementById('c-timeline'), {
+    type: 'line',
+    data: {
+      labels: sortedDays,
+      datasets: [{
+        label: 'Total acumulado',
+        data: accData,
+        borderColor: '#3a5bbf',
+        backgroundColor: '#3a5bbf22',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#3a5bbf',
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } },
+        x: { grid: { display: false }, ticks: { maxRotation: 45 } }
+      }
+    }
+  });
+
+  // Taxa de conclusão
+  const completionEl = document.getElementById('completion-wrap');
+  const taxaConclusao = total ? Math.round(concluidas / total * 100) : 0;
+  const taxaAtiva = total ? Math.round(ativas / total * 100) : 0;
+  const taxaRecusada = total ? Math.round(recusadas / total * 100) : 0;
+
+  const barRow = (label, value, color, count) => `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:12px;font-weight:600;color:var(--text-muted)">${label}</span>
+        <span style="font-size:12px;font-weight:700;color:${color}">${value}% <span style="color:var(--text-dim);font-weight:400">(${count})</span></span>
+      </div>
+      <div style="height:10px;background:var(--surface2);border-radius:6px;overflow:hidden">
+        <div style="height:100%;width:${value}%;background:${color};border-radius:6px;transition:width .8s ease"></div>
+      </div>
+    </div>`;
+
+  completionEl.innerHTML =
+    barRow('Ativas', taxaAtiva, '#1e88e5', ativas) +
+    barRow('Concluídas', taxaConclusao, '#2e7d4f', concluidas) +
+    barRow('Recusadas', taxaRecusada, '#e53935', recusadas) +
+    `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em">Taxa de resolução</div>
+      <div style="font-size:48px;font-weight:700;color:${taxaConclusao >= 50 ? '#2e7d4f' : '#f9a825'}">${taxaConclusao}%</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">${concluidas} concluídas de ${total} total</div>
+    </div>`;
 
 } catch(err) {
   document.getElementById('app').innerHTML = `<p class="loading">Erro: ${err.message}</p>`;

@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </header>
 
+
 <div class="tabs">
   <button class="tab active" id="tab-ativas" onclick="setTab('ativas')">Ativas</button>
   <button class="tab" id="tab-recusadas" onclick="setTab('recusadas')">Recusadas</button>
@@ -97,6 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <div class="form-section">
+  <div class="field field-id">
+    <label>ID</label>
+    <input id="f-id" type="text" placeholder="ex: 42" />
+  </div>
   <div class="field">
     <label>Discord</label>
     <input id="f-discord" type="text" placeholder="Nome do Discord" />
@@ -118,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Limpar pesquisa">×</button>
   </div>
   <div class="toolbar-right">
-    <button class="btn-excel" onclick="exportExcel()">
+    <button class="btn-view" id="btn-view" onclick="toggleView()" title="Alternar vista">⊞ Cards</button>
+<button class="btn-excel" onclick="exportExcel()">
       <img src="excel-icon.svg" width="18" height="18" alt="Excel" />
       Exportar Excel
     </button>
@@ -148,11 +154,25 @@ document.addEventListener('DOMContentLoaded', () => {
   <button class="chip" data-filter="feedback" data-value="Stand-by" onclick="setFilter('feedback','Stand-by')">Stand-by</button>
   <button class="chip" data-filter="feedback" data-value="Sem efeito" onclick="setFilter('feedback','Sem efeito')">Sem efeito</button>
   <button class="chip" data-filter="feedback" data-value="Sem sentido" onclick="setFilter('feedback','Sem sentido')">Sem sentido</button>
-  <button class="chip-clear-all" id="chip-clear-all" onclick="clearFilters()" style="display:none">× Limpar filtros</button>
+<button class="chip-clear-all" id="chip-clear-all" onclick="clearFilters()" style="display:none">× Limpar filtros</button>
 </div>
 
 <div id="status-msg" class="status-msg"></div>
 
+<div id="cards-sort" style="display:none">
+  <span class="cards-sort-label">Ordenar:</span>
+  <button class="cards-sort-btn active" data-col="id" onclick="cardsSortBy('id')">ID</button>
+  <button class="cards-sort-btn" data-col="prioridade" onclick="cardsSortBy('prioridade')">Prioridade</button>
+  <button class="cards-sort-btn" data-col="feedback" onclick="cardsSortBy('feedback')">Estado</button>
+  <button class="cards-sort-btn" data-col="discord" onclick="cardsSortBy('discord')">Discord</button>
+  <button class="cards-sort-btn" data-col="data" onclick="cardsSortBy('data')">Data</button>
+  <button class="cards-sort-dir" id="cards-sort-dir" onclick="cardsSortDirToggle()">↓</button>
+  <span style="flex:1"></span>
+  <button class="cards-sort-btn" id="btn-compact" onclick="toggleCompact()">⊟ Compacto</button>
+  <button class="cards-sort-btn" id="btn-repor-ordem" onclick="resetCardOrder()" style="display:none">↺ Repor ordem</button>
+</div>
+
+<div id="table-container">
 <div class="table-wrap">
   <table>
     <thead>
@@ -171,6 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <tbody id="tbody"></tbody>
   </table>
 </div>
+</div>
+<div id="cards-container" class="cards-container" style="display:none"></div>
 
 <div class="toast" id="toast"></div>
 
