@@ -113,15 +113,35 @@ document.addEventListener('DOMContentLoaded', () => {
     <label>Descrição</label>
     <input id="f-desc" type="text" placeholder="Detalhes" />
   </div>
-  <button class="btn-add" onclick="addEntry()">+ Adicionar</button>
+  <button class="btn-add" onclick="addEntry()">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="5" y="1" width="2" height="10" rx="1"/><rect x="1" y="5" width="10" height="2" rx="1"/></svg>
+    Adicionar
+  </button>
 </div>
 
+<div class="sticky-bar">
 <div class="toolbar">
   <div class="search-wrap">
+    <svg class="search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     <input type="text" id="search" placeholder="Pesquisar" oninput="renderTable()" />
-    <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Limpar pesquisa">×</button>
+    <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Limpar pesquisa"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
   </div>
   <div class="toolbar-right">
+    <div class="view-switcher">
+      <button class="btn-view-mode active" data-mode="table" onclick="setViewMode('table')" title="Tabela (1)">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="2" width="13" height="2.2" rx="1.1"/><rect x="1" y="6.4" width="13" height="2.2" rx="1.1"/><rect x="1" y="10.8" width="13" height="2.2" rx="1.1"/></svg>
+      </button>
+      <button class="btn-view-mode" data-mode="cards" onclick="setViewMode('cards')" title="Cards (2)">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2"/></svg>
+      </button>
+      <button class="btn-view-mode" data-mode="kanban" onclick="setViewMode('kanban')" title="Kanban (3)">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="1" width="3.5" height="13" rx="1.1"/><rect x="5.75" y="1" width="3.5" height="9" rx="1.1"/><rect x="10.5" y="1" width="3.5" height="11" rx="1.1"/></svg>
+      </button>
+    </div>
+    <button class="btn-shortcuts" onclick="toggleShortcuts(this)" title="Atalhos de teclado (?)">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="3" width="13" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="2.8" y="5.2" width="1.6" height="1.6" rx=".4"/><rect x="5.5" y="5.2" width="1.6" height="1.6" rx=".4"/><rect x="8.2" y="5.2" width="1.6" height="1.6" rx=".4"/><rect x="10.9" y="5.2" width="1.4" height="1.6" rx=".4"/><rect x="2.8" y="8" width="1.6" height="1.6" rx=".4"/><rect x="5.5" y="8" width="4.4" height="1.6" rx=".4"/><rect x="10.9" y="8" width="1.4" height="1.6" rx=".4"/></svg>
+    </button>
+    <div class="toolbar-sep"></div>
     <button class="btn-excel" onclick="exportExcel()">
       <img src="excel-icon.svg" width="18" height="18" alt="Excel" />
       Exportar Excel
@@ -130,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
       Limpar tudo
     </button>
-    <button id="btn-view" class="btn-view" onclick="toggleView()">⊞ Cards</button>
   </div>
 </div>
 
@@ -155,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <button class="chip" data-filter="feedback" data-value="Sem sentido" onclick="setFilter('feedback','Sem sentido')">Sem sentido</button>
   <button class="chip-clear-all" id="chip-clear-all" onclick="clearFilters()" style="display:none">× Limpar filtros</button>
 </div>
+</div><!-- /sticky-bar -->
 
 <div id="status-msg" class="status-msg"></div>
 
@@ -164,10 +184,18 @@ document.addEventListener('DOMContentLoaded', () => {
   <button class="cards-sort-btn" data-col="prioridade" onclick="cardsSortBy('prioridade')">Prioridade</button>
   <button class="cards-sort-btn" data-col="discord" onclick="cardsSortBy('discord')">Discord</button>
   <button class="cards-sort-btn" data-col="data" onclick="cardsSortBy('data')">Data</button>
-  <button id="cards-sort-dir" class="cards-sort-dir" onclick="cardsSortDirToggle()">↓</button>
-  <span style="margin-left:auto;display:flex;gap:6px;">
-    <button id="btn-compact" class="cards-sort-btn" onclick="toggleCompact()">⊟ Compacto</button>
-    <button id="btn-repor-ordem" class="cards-sort-btn" onclick="resetCardOrder()" style="display:none">↺ Repor ordem</button>
+  <button id="cards-sort-dir" class="cards-sort-dir" onclick="cardsSortDirToggle()" title="Inverter ordem">
+    <svg id="sort-dir-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>
+  </button>
+  <span style="margin-left:auto;display:flex;gap:3px;">
+    <button id="btn-compact" class="cards-sort-btn" onclick="toggleCompact()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="7" y="1" width="5" height="5" rx="1"/><rect x="1" y="7" width="11" height="2" rx="1"/><rect x="1" y="10" width="11" height="2" rx="1"/></svg>
+      Compacto
+    </button>
+    <button id="btn-repor-ordem" class="cards-sort-btn" onclick="resetCardOrder()" style="display:none">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5A4.5 4.5 0 1 0 4 3"/><polyline points="1,1 4,3 2,6"/></svg>
+      Repor ordem
+    </button>
   </span>
 </div>
 
@@ -192,49 +220,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="cards-container" id="cards-container" style="display:none"></div>
 
+<div class="kanban-container" id="kanban-container" style="display:none"></div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Modal 1 - Verde -->
+<!-- Modal 1 -->
 <div id="modal1-overlay" class="confirm-modal" style="display:none">
-  <div class="confirm-modal-box modal-green">
-    <div class="confirm-modal-icon">🗑️</div>
+  <div class="confirm-modal-box">
+    <div class="confirm-modal-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </div>
     <div class="confirm-modal-title">Limpar Dados</div>
     <div class="confirm-modal-msg">Tens a certeza que queres apagar tudo?</div>
     <div class="confirm-modal-actions">
       <button class="cmodal-cancel" onclick="document.getElementById('modal1-overlay').style.display='none'">Cancelar</button>
-      <button class="cmodal-confirm green" onclick="showModal2()">Sim, apagar</button>
+      <button class="cmodal-confirm" onclick="showModal2()">Sim, apagar</button>
     </div>
   </div>
 </div>
 
-<!-- Modal 2 - Amarelo -->
+<!-- Modal 2 -->
 <div id="modal2-overlay" class="confirm-modal" style="display:none">
-  <div class="confirm-modal-box modal-yellow">
-    <div class="confirm-modal-icon">⚠️</div>
+  <div class="confirm-modal-box">
+    <div class="confirm-modal-icon warn">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 21h20L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9v6M12 17.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
     <div class="confirm-modal-title">Respira</div>
-    <div class="confirm-modal-msg">TENS MESMO MESMO MESMO MESMO A CERTEZA?</div>
+    <div class="confirm-modal-msg">Tens mesmo mesmo mesmo a certeza?</div>
     <div class="confirm-modal-actions">
       <button class="cmodal-cancel" onclick="document.getElementById('modal2-overlay').style.display='none'">Cancelar</button>
-      <button class="cmodal-confirm yellow" onclick="showModal3()">Sim, tenho</button>
+      <button class="cmodal-confirm warn" onclick="showModal3()">Sim, tenho</button>
     </div>
   </div>
 </div>
 
-<!-- Modal 3 - Vermelho Emergência -->
-<div id="emergency-overlay" class="emergency-overlay" style="display:none">
-  <div class="emergency-box">
-    <div class="emergency-lights">
-      <span></span><span></span><span></span>
+<!-- Modal 3 - Emergência -->
+<div id="emergency-overlay" class="confirm-modal" style="display:none">
+  <div class="confirm-modal-box danger">
+    <div class="emergency-lights"><span></span><span></span><span></span></div>
+    <div class="confirm-modal-icon danger">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 21h20L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9v6M12 17.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </div>
-    <div class="emergency-icon">⚠️</div>
-    <div class="emergency-title">VAMOS TER CALMA PARCEIRO</div>
-    <div class="emergency-msg">SE APAGARES ÉS<br><strong>HOMO SAPIENS</strong></div>
-    <div class="emergency-actions">
-      <button class="emergency-cancel" onclick="cancelEmergency()">Cancelar</button>
-      <button class="emergency-confirm" onclick="confirmEmergency()">Sou Homo Sapiens</button>
+    <div class="confirm-modal-title danger">Vamos ter calma parceiro</div>
+    <div class="confirm-modal-msg">Se apagares és<br><strong>Homo Sapiens</strong></div>
+    <div class="confirm-modal-actions">
+      <button class="cmodal-cancel" onclick="cancelEmergency()">Cancelar</button>
+      <button class="cmodal-confirm danger" onclick="confirmEmergency()">Sou Homo Sapiens</button>
     </div>
   </div>
 </div>
+
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Voltar ao topo">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="app.js"></script>

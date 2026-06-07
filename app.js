@@ -24,6 +24,8 @@ let viewMode     = localStorage.getItem('view-mode') || 'table';
 let compactCards = localStorage.getItem('compact-cards') === 'true';
 let customCardOrder = JSON.parse(localStorage.getItem('card-order') || 'null');
 let isFirstLoad  = true;
+let _suppressKanbanRender = false;
+let _suppressTimer = null;
 
 // ── Mapas ─────────────────────────────────────────────────────
 const prioridadeClasse = {
@@ -40,9 +42,34 @@ const prioDotColors = {
   'Stand-by':'#546e7a','Terminado':'#2e7d32','Inviável':'#c62828'
 };
 const prioRowClass = {
-  'Urgente':'prio-urgente','Necessário':'prio-necessario','Inviável':'prio-inviavel'
+  'Urgente':'prio-urgente','Necessário':'prio-necessario','Inviável':'prio-inviavel',
+  'Não urgente':'prio-naougente','Stand-by':'prio-standby','Terminado':'prio-terminado'
 };
 const prioOrder = { 'Urgente':0,'Necessário':1,'Não urgente':2,'Stand-by':3,'Terminado':4,'Inviável':5,'':99 };
+
+const prioCardClass = {
+  'Urgente':'cp-urgente','Necessário':'cp-necessario','Não urgente':'cp-naougente',
+  'Stand-by':'cp-standby','Terminado':'cp-terminado','Inviável':'cp-inviavel'
+};
+
+const kanbanColDefs = {
+  ativas: [
+    { key: '',           label: 'Pendente',   color: '#90a4ae' },
+    { key: 'Em análise', label: 'Em análise', color: '#fb8c00' },
+    { key: 'Em curso',   label: 'Em curso',   color: '#00897b' },
+    { key: 'Em testes',  label: 'Em testes',  color: '#8e24aa' },
+    { key: 'Update',     label: 'Update',     color: '#1e88e5' },
+    { key: 'Stand-by',   label: 'Stand-by',   color: '#546e7a' },
+  ],
+  recusadas: [
+    { key: 'Recusado',    label: 'Recusado',    color: '#e53935' },
+    { key: 'Sem efeito',  label: 'Sem efeito',  color: '#f4511e' },
+    { key: 'Sem sentido', label: 'Sem sentido', color: '#d81b60' },
+  ],
+  concluidos: [
+    { key: 'Concluído', label: 'Concluído', color: '#43a047' },
+  ],
+};
 
 // ── Helpers de classificação ──────────────────────────────────
 function isConcluido(d) { return d.prioridade === 'Terminado' && d.feedback === 'Concluído'; }
@@ -106,23 +133,26 @@ async function updateField(docId, field, value, el) {
 
 // ── Eliminar ──────────────────────────────────────────────────
 function deleteEntry(docId, btnEl) {
-  document.querySelectorAll('.confirm-del').forEach(el => el.remove());
-  const rect  = btnEl.getBoundingClientRect();
-  const popup = document.createElement('div');
-  popup.className = 'confirm-del';
-  popup.innerHTML = `<span>Apagar?</span>
-    <button class="confirm-yes" onclick="confirmDelete('${docId}')">Sim</button>
-    <button class="confirm-no">Não</button>`;
-  document.body.appendChild(popup);
-  const ph = popup.offsetHeight, pw = popup.offsetWidth;
-  popup.style.left = Math.max(8, rect.right - pw) + 'px';
-  popup.style.top  = (rect.top - ph - 6) + 'px';
-  popup.querySelector('.confirm-no').addEventListener('click', () => popup.remove());
-  setTimeout(() => {
-    document.addEventListener('click', function h(e) {
-      if (!popup.contains(e.target) && e.target !== btnEl) { popup.remove(); document.removeEventListener('click', h); }
-    });
-  }, 0);
+  if (btnEl.dataset.confirming) {
+    confirmDelete(docId);
+    return;
+  }
+  // reset any other pending confirmations
+  document.querySelectorAll('.btn-del[data-confirming]').forEach(b => _resetDelBtn(b));
+  btnEl.dataset.confirming = '1';
+  btnEl.title = 'Clica de novo para confirmar';
+  btnEl.style.cssText = 'background:#8B1A1A;color:#fff;';
+  btnEl._delTimer = setTimeout(() => _resetDelBtn(btnEl), 2000);
+  document.addEventListener('click', function h(e) {
+    if (e.target !== btnEl) { _resetDelBtn(btnEl); document.removeEventListener('click', h); }
+  }, { capture: true, once: false });
+}
+
+function _resetDelBtn(btn) {
+  clearTimeout(btn._delTimer);
+  delete btn.dataset.confirming;
+  btn.style.cssText = '';
+  btn.title = 'Eliminar';
 }
 
 async function confirmDelete(docId) {
@@ -164,7 +194,16 @@ function setTab(tab) {
   localStorage.setItem('active-tab', tab);
   activeFilters = { prioridade: [], feedback: [] };
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  _triggerViewFade();
   renderTable();
+}
+
+function _triggerViewFade() {
+  const ids = ['table-container','cards-container','kanban-container'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== 'none') { el.classList.remove('view-fade'); void el.offsetWidth; el.classList.add('view-fade'); }
+  });
 }
 
 // ── Filtros ───────────────────────────────────────────────────
@@ -269,6 +308,66 @@ function customSelectHtml(docId, field, value, options, classeMap) {
   </div>`;
 }
 
+function kanbanCustomSelectHtml(docId, field, value, options, classeMap) {
+  const triggerInner = value
+    ? `<span class="badge ${classeMap[value] || 'badge-default'}">${esc(value)}</span>`
+    : `<span class="cs-placeholder">—</span>`;
+  const optsHtml = [
+    `<div class="cs-option" onclick="kanbanSelectOption(this,'${docId}','${field}','')"><span class="cs-empty">—</span></div>`,
+    ...options.map(o => `<div class="cs-option${value===o?' cs-selected':''}" onclick="kanbanSelectOption(this,'${docId}','${field}','${o}')"><span class="badge ${classeMap[o]||'badge-default'}">${esc(o)}</span></div>`)
+  ].join('');
+  return `<div class="custom-select" data-field="${field}">
+    <div class="cs-trigger" onclick="toggleSelect(this)">${triggerInner}<span class="cs-arrow">▾</span></div>
+    <div class="cs-dropdown">${optsHtml}</div>
+  </div>`;
+}
+
+function kanbanSelectOption(optEl, docId, field, value) {
+  const cs = optEl.closest('.custom-select');
+  cs.classList.remove('cs-open');
+  const classeMap = field === 'prioridade' ? prioridadeClasse : feedbackClasse;
+  cs.querySelector('.cs-trigger').innerHTML = value
+    ? `<span class="badge ${classeMap[value]||'badge-default'}">${esc(value)}</span><span class="cs-arrow">▾</span>`
+    : `<span class="cs-placeholder">—</span><span class="cs-arrow">▾</span>`;
+
+  const card = cs.closest('.kanban-card');
+
+  if (field === 'feedback' && card) {
+    const currentCol = card.closest('.kanban-col');
+    card.dataset.feedback = value;
+    const targetCol = document.querySelector(`.kanban-col[data-feedback="${value}"]`);
+    if (targetCol && targetCol !== currentCol) {
+      const targetCards = targetCol.querySelector('.kanban-cards');
+      targetCards.querySelector('.kanban-empty')?.remove();
+      targetCards.prepend(card);
+      _updateKanbanColStats();
+    }
+  }
+
+  if (field === 'prioridade' && card) {
+    const prioColor = prioDotColors[value] || '';
+    card.style.borderLeftColor = prioColor;
+  }
+
+  _suppressKanbanRender = true;
+  clearTimeout(_suppressTimer);
+  _suppressTimer = setTimeout(() => { _suppressKanbanRender = false; }, 3000);
+  updateField(docId, field, value);
+}
+
+function _updateKanbanColStats() {
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    const count = col.querySelectorAll('.kanban-card').length;
+    const countEl = col.querySelector('.kanban-col-count');
+    if (countEl) countEl.textContent = count;
+    const cardsDiv = col.querySelector('.kanban-cards');
+    if (count === 0 && cardsDiv && !cardsDiv.querySelector('.kanban-empty')) {
+      cardsDiv.innerHTML = '<div class="kanban-empty">— vazio —</div>';
+    }
+    col.classList.toggle('kanban-col-empty', count === 0);
+  });
+}
+
 // ── "Ver mais" só quando necessário ──────────────────────────
 function fixExpandBtns() {
   document.querySelectorAll('.cell-text, .comment-text').forEach(el => {
@@ -287,7 +386,7 @@ function renderTable() {
 
   const filtered = getFilteredData();
 
-  // Contadores tabs
+  // Contadores tabs com pulse
   const searchLow = searchVal.toLowerCase();
   const base = data.filter(d =>
     !searchLow ||
@@ -301,8 +400,13 @@ function renderTable() {
     const el = document.getElementById('tab-' + t);
     if (!el) return;
     const lbl = t === 'ativas' ? 'Ativas' : t === 'recusadas' ? 'Recusadas' : 'Concluídos';
+    const oldCount = el.querySelector('.tab-count')?.textContent;
     el.innerHTML = `${lbl} <span class="tab-count">${counts[t]}</span>`;
     el.classList.toggle('active', t === currentTab);
+    if (oldCount !== undefined && oldCount !== String(counts[t])) {
+      const tc = el.querySelector('.tab-count');
+      if (tc) { tc.classList.remove('pulse'); void tc.offsetWidth; tc.classList.add('pulse'); }
+    }
   });
 
   // Chips
@@ -354,12 +458,17 @@ function renderTable() {
 
   const tbody = document.getElementById('tbody');
   if (!filtered.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">— Sem sugestões registadas —</td></tr>';
+    const hasSearch = searchVal || activeFilters.prioridade.length || activeFilters.feedback.length;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
+      <div class="empty-state-icon">${hasSearch ? '🔍' : '📭'}</div>
+      <div class="empty-state-title">${hasSearch ? 'Sem resultados' : 'Sem sugestões'}</div>
+      <div class="empty-state-sub">${hasSearch ? 'Tenta ajustar os filtros ou a pesquisa.' : 'Adiciona a primeira sugestão acima.'}</div>
+    </div></td></tr>`;
   } else {
     tbody.innerHTML = filtered.map(d => `
       <tr class="row-fade ${prioRowClass[d.prioridade] || ''}">
         <td class="td-id">#${esc(String(d.id))}</td>
-        <td class="td-discord"><div class="discord-cell">${avatarHtml(d.discord)}<span>${esc(d.discord)}</span></div></td>
+        <td class="td-discord"><div class="discord-cell">${avatarHtml(d.discord)}<span title="${esc(d.discord)}">${esc(d.discord)}</span></div></td>
         <td class="td-sug">${prioBadgeDot(d.prioridade)}${esc(d.sugestao)}</td>
         <td class="td-desc">${cellWithExpand(d.descricao)}</td>
         <td>${customSelectHtml(d._docId,'prioridade',d.prioridade,prioOpts,prioridadeClasse)}</td>
@@ -377,7 +486,8 @@ function renderTable() {
     setTimeout(fixExpandBtns, 0);
   }
 
-  if (viewMode === 'cards') renderCards(filtered);
+  if (viewMode === 'cards')  renderCards(filtered);
+  if (viewMode === 'kanban' && !_suppressKanbanRender) renderKanban(filtered);
 }
 
 // ── Comentário editável ───────────────────────────────────────
@@ -475,28 +585,33 @@ function renderCards(filtered) {
   const feedOpts = ['Em curso','Concluído','Recusado','Update','Em testes','Stand-by','Em análise','Sem efeito','Sem sentido'];
   const container = document.getElementById('cards-container');
   if (!ordered.length) {
-    container.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:48px;font-size:13px;">— Sem sugestões registadas —</p>';
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state-icon">📭</div>
+      <div class="empty-state-title">Sem sugestões</div>
+      <div class="empty-state-sub">Não há sugestões que correspondam aos filtros.</div>
+    </div>`;
     return;
   }
   container.innerHTML = ordered.map(d => `
-    <div class="suggestion-card row-fade" draggable="true" data-docid="${d._docId}">
+    <div class="suggestion-card row-fade ${prioCardClass[d.prioridade]||''}" draggable="true" data-docid="${d._docId}">
       <div class="card-header">
         <div class="card-meta">
           <span class="card-id">#${esc(String(d.id))}</span>
           <div class="discord-cell">${avatarHtml(d.discord)}<span class="card-discord">${esc(d.discord)}</span></div>
         </div>
-        <div class="card-badges">
-          <div class="card-dropdown-wrap">
-            <span class="card-dropdown-label">Prioridade</span>
-            ${customSelectHtml(d._docId,'prioridade',d.prioridade,prioOpts,prioridadeClasse)}
-          </div>
-          <div class="card-dropdown-wrap">
-            <span class="card-dropdown-label">Estado</span>
-            ${customSelectHtml(d._docId,'feedback',d.feedback,feedOpts,feedbackClasse)}
-          </div>
-        </div>
+        <button class="btn-del" onclick="deleteEntry('${d._docId}',this)" title="Eliminar">×</button>
       </div>
       <div class="card-title">${prioBadgeDot(d.prioridade)}${esc(d.sugestao)}</div>
+      <div class="card-selects">
+        <div class="card-dropdown-wrap">
+          <span class="card-dropdown-label">Prioridade</span>
+          ${customSelectHtml(d._docId,'prioridade',d.prioridade,prioOpts,prioridadeClasse)}
+        </div>
+        <div class="card-dropdown-wrap">
+          <span class="card-dropdown-label">Estado</span>
+          ${customSelectHtml(d._docId,'feedback',d.feedback,feedOpts,feedbackClasse)}
+        </div>
+      </div>
       <div class="card-desc">
         <span class="card-section-label">Descrição</span>
         ${d.descricao ? cellWithExpand(d.descricao) : '<span class="card-empty-field">Sem descrição</span>'}
@@ -511,7 +626,6 @@ function renderCards(filtered) {
       <div class="card-footer">
         <span class="card-date" title="${d.data}">${relativeDate(d.data)}</span>
         <div class="card-drag-handle" title="Arrastar para reordenar">⠿</div>
-        <button class="btn-del" onclick="deleteEntry('${d._docId}',this)" title="Eliminar">×</button>
       </div>
     </div>
   `).join('');
@@ -530,14 +644,120 @@ function initDragAndDrop() {
   });
 }
 
-function toggleView() {
-  viewMode = viewMode === 'table' ? 'cards' : 'table';
-  localStorage.setItem('view-mode', viewMode);
-  document.getElementById('btn-view').textContent = viewMode === 'cards' ? '☰ Tabela' : '⊞ Cards';
-  document.getElementById('table-container').style.display = viewMode === 'table' ? '' : 'none';
-  document.getElementById('cards-container').style.display = viewMode === 'cards' ? '' : 'none';
-  document.getElementById('cards-sort').style.display      = viewMode === 'cards' ? 'flex' : 'none';
+function setViewMode(mode) {
+  viewMode = mode;
+  localStorage.setItem('view-mode', mode);
+  document.querySelectorAll('.btn-view-mode').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById('table-container').style.display  = mode === 'table'  ? '' : 'none';
+  document.getElementById('cards-container').style.display  = mode === 'cards'  ? '' : 'none';
+  document.getElementById('kanban-container').style.display = mode === 'kanban' ? '' : 'none';
+  document.getElementById('cards-sort').style.display       = mode === 'cards'  ? 'flex' : 'none';
+  _triggerViewFade();
   renderTable();
+}
+
+function toggleView() { setViewMode(viewMode === 'table' ? 'cards' : 'table'); }
+
+// ── Kanban ────────────────────────────────────────────────────
+function renderKanban(filtered) {
+  const container = document.getElementById('kanban-container');
+  const cols = kanbanColDefs[currentTab] || kanbanColDefs.ativas;
+
+  container.innerHTML = cols.map(col => {
+    const cards = filtered.filter(d => (d.feedback || '') === col.key);
+    const isEmpty = cards.length === 0;
+    return `
+      <div class="kanban-col${isEmpty ? ' kanban-col-empty' : ''}" data-feedback="${col.key}" style="border-top:3px solid ${col.color}">
+        <div class="kanban-col-header" style="background:${col.color}12">
+          <span class="kanban-col-title" style="color:${col.color}">${col.label}</span>
+          <span class="kanban-col-count" style="background:${col.color}">${cards.length}</span>
+        </div>
+        <div class="kanban-cards">
+          ${cards.length ? cards.map(d => kanbanCardHtml(d)).join('') : '<div class="kanban-empty">— vazio —</div>'}
+        </div>
+      </div>`;
+  }).join('');
+
+  initKanbanDnD();
+}
+
+function kanbanCardHtml(d) {
+  const prioColor = prioDotColors[d.prioridade] || '';
+  const prioOpts = ['Urgente','Necessário','Inviável','Terminado','Não urgente','Stand-by'];
+  const feedOpts = ['Em curso','Concluído','Recusado','Update','Em testes','Stand-by','Em análise','Sem efeito','Sem sentido'];
+  return `
+    <div class="kanban-card" draggable="true" data-docid="${d._docId}" data-feedback="${d.feedback||''}"
+         style="${prioColor ? `border-left-color:${prioColor}` : ''}">
+      <div class="kanban-card-top">
+        <div class="kanban-card-meta">
+          <span class="card-id">#${esc(String(d.id))}</span>
+          ${avatarHtml(d.discord)}
+          <span class="kanban-discord-name">${esc(d.discord)}</span>
+        </div>
+        <button class="btn-del" onclick="deleteEntry('${d._docId}',this)" title="Eliminar">×</button>
+      </div>
+      <div class="kanban-card-title">${esc(d.sugestao)}</div>
+      <div class="kanban-card-selects">
+        ${kanbanCustomSelectHtml(d._docId,'prioridade',d.prioridade,prioOpts,prioridadeClasse)}
+        ${kanbanCustomSelectHtml(d._docId,'feedback',d.feedback,feedOpts,feedbackClasse)}
+      </div>
+      <div class="kanban-card-footer">
+        <span class="kanban-card-date">${relativeDate(d.data)}</span>
+      </div>
+    </div>`;
+}
+
+function initKanbanDnD() {
+  let dragDocId = null;
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      if (e.target.closest('.custom-select, .btn-del')) { e.preventDefault(); return; }
+      dragDocId = card.dataset.docid;
+      card.classList.add('card-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('card-dragging');
+      document.querySelectorAll('.kanban-drag-over').forEach(el => el.classList.remove('kanban-drag-over'));
+    });
+  });
+
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      document.querySelectorAll('.kanban-drag-over').forEach(el => el.classList.remove('kanban-drag-over'));
+      col.classList.add('kanban-drag-over');
+    });
+    col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('kanban-drag-over'); });
+    col.addEventListener('drop', async e => {
+      e.preventDefault();
+      col.classList.remove('kanban-drag-over');
+      if (!dragDocId) return;
+      const newFeedback = col.dataset.feedback;
+      const card = document.querySelector(`.kanban-card[data-docid="${dragDocId}"]`);
+      if (!card || card.dataset.feedback === newFeedback) return;
+
+      // Optimistic: move card and update dropdown immediately
+      card.dataset.feedback = newFeedback;
+      const targetCards = col.querySelector('.kanban-cards');
+      targetCards.querySelector('.kanban-empty')?.remove();
+      targetCards.prepend(card);
+      const feedSel = card.querySelector('.custom-select[data-field="feedback"]');
+      if (feedSel) {
+        const badge = feedbackClasse[newFeedback] || 'badge-default';
+        feedSel.querySelector('.cs-trigger').innerHTML = newFeedback
+          ? `<span class="badge ${badge}">${esc(newFeedback)}</span><span class="cs-arrow">▾</span>`
+          : `<span class="cs-placeholder">—</span><span class="cs-arrow">▾</span>`;
+      }
+      _updateKanbanColStats();
+      _suppressKanbanRender = true;
+      clearTimeout(_suppressTimer);
+      _suppressTimer = setTimeout(() => { _suppressKanbanRender = false; }, 3000);
+
+      await updateField(dragDocId, 'feedback', newFeedback);
+      toast(`Estado → ${newFeedback || 'Pendente'}`);
+    });
+  });
 }
 
 function cardsSortBy(col) {
@@ -547,14 +767,18 @@ function cardsSortBy(col) {
   else { sortCol = col; sortAsc = true; }
   document.querySelectorAll('.cards-sort-btn[data-col]').forEach(b => b.classList.toggle('active', b.dataset.col === col));
   const dirBtn = document.getElementById('cards-sort-dir');
-  if (dirBtn) dirBtn.textContent = sortAsc ? '↑' : '↓';
+  if (dirBtn) dirBtn.innerHTML = sortAsc
+    ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,8 6,4 10,8"/></svg>`
+    : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>`;
   renderTable();
 }
 
 function cardsSortDirToggle() {
   sortAsc = !sortAsc;
   const dirBtn = document.getElementById('cards-sort-dir');
-  if (dirBtn) dirBtn.textContent = sortAsc ? '↑' : '↓';
+  if (dirBtn) dirBtn.innerHTML = sortAsc
+    ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,8 6,4 10,8"/></svg>`
+    : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>`;
   renderTable();
 }
 
@@ -593,10 +817,16 @@ function toggleTheme() {
 // ── Toast / status ────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
+  const isError = msg.startsWith('⚠️') || msg.startsWith('Preenche');
+  const iconSvg = isError
+    ? `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M8 1.5L1 14.5h14L8 1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6v4M8 11.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+    : `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const cleanMsg = msg.replace(/^[⚠️📝]\s*/, '');
+  el.innerHTML = iconSvg + `<span>${cleanMsg}</span>`;
+  el.style.borderLeftColor = isError ? 'var(--red)' : 'var(--accent)';
   el.classList.add('show');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2500);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 // ── Tema guardado ─────────────────────────────────────────────
@@ -607,12 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('btn-theme');
   if (btn) btn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
 
-  if (viewMode === 'cards') {
-    document.getElementById('table-container').style.display = 'none';
-    document.getElementById('cards-container').style.display = '';
-    document.getElementById('cards-sort').style.display      = 'flex';
-    document.getElementById('btn-view').textContent = '☰ Tabela';
-  }
+  setViewMode(viewMode);
   updateReporBtn();
   if (compactCards) {
     document.getElementById('cards-container')?.classList.add('compact');
@@ -621,11 +846,73 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ── Sticky bar shadow ─────────────────────────────────────────
+const _stickyBar = document.querySelector('.sticky-bar');
+if (_stickyBar) {
+  const _stickyObs = new IntersectionObserver(([e]) => {
+    _stickyBar.classList.toggle('is-stuck', e.intersectionRatio < 1);
+  }, { threshold: [1], rootMargin: '-1px 0px 0px 0px' });
+  _stickyObs.observe(_stickyBar);
+}
+
+// ── Scroll to top ────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('scroll-top')?.classList.toggle('visible', window.scrollY > 300);
+}, { passive: true });
+
 // ── Teclado ───────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && ['f-id','f-discord','f-sug','f-desc'].includes(e.target.id)) addEntry();
-  if (e.key === 'Escape') document.querySelectorAll('.custom-select.cs-open').forEach(el => el.classList.remove('cs-open'));
+  const inInput = ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName);
+
+  if (inInput) {
+    if (e.key === 'Enter' && ['f-id','f-discord','f-sug','f-desc'].includes(e.target.id)) addEntry();
+    if (e.key === 'Escape') { document.querySelectorAll('.custom-select.cs-open').forEach(el => el.classList.remove('cs-open')); e.target.blur(); }
+    return;
+  }
+
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); document.getElementById('search')?.focus(); return; }
+  if (e.key === 'n' || e.key === 'N') { document.getElementById('f-id')?.focus(); return; }
+  if (e.key === '1') { setViewMode('table'); return; }
+  if (e.key === '2') { setViewMode('cards'); return; }
+  if (e.key === '3') { setViewMode('kanban'); return; }
+  if (e.key === '?') { toggleShortcuts(); return; }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.custom-select.cs-open').forEach(el => el.classList.remove('cs-open'));
+    document.getElementById('shortcuts-overlay')?.remove();
+  }
 });
+
+let shortcutsVisible = false;
+function toggleShortcuts(btnEl) {
+  const existing = document.getElementById('shortcuts-overlay');
+  if (existing) { existing.remove(); return; }
+  const el = document.createElement('div');
+  el.id = 'shortcuts-overlay';
+  el.className = 'shortcuts-overlay';
+  el.innerHTML = `
+    <h4>Atalhos de teclado</h4>
+    <div class="shortcut-row"><span>Pesquisar</span><span class="shortcut-key">Ctrl+F</span></div>
+    <div class="shortcut-row"><span>Nova sugestão</span><span class="shortcut-key">N</span></div>
+    <div class="shortcut-row"><span>Vista Tabela</span><span class="shortcut-key">1</span></div>
+    <div class="shortcut-row"><span>Vista Cards</span><span class="shortcut-key">2</span></div>
+    <div class="shortcut-row"><span>Vista Kanban</span><span class="shortcut-key">3</span></div>
+    <div class="shortcut-row"><span>Atalhos</span><span class="shortcut-key">?</span></div>
+  `;
+  el.style.position = 'fixed';
+  el.style.bottom = 'auto';
+  el.style.left = 'auto';
+  document.body.appendChild(el);
+  if (btnEl) {
+    const rect = btnEl.getBoundingClientRect();
+    const elW = el.offsetWidth || 200;
+    el.style.top  = (rect.bottom + 8) + 'px';
+    el.style.left = Math.max(8, rect.right - elW) + 'px';
+    el.style.right = 'auto';
+  } else {
+    el.style.top = '80px'; el.style.right = '24px';
+  }
+  setTimeout(() => document.addEventListener('click', e => { if (!el.contains(e.target)) el.remove(); }, { once: true }), 100);
+}
 
 // ── Exports ───────────────────────────────────────────────────
 window.addEntry        = addEntry;
@@ -645,6 +932,8 @@ window.startEditComment = startEditComment;
 window.toggleSelect    = toggleSelect;
 window.selectOption    = selectOption;
 window.toggleView      = toggleView;
+window.setViewMode     = setViewMode;
+window.toggleShortcuts = toggleShortcuts;
 window.toggleCompact      = toggleCompact;
 window.cardsSortBy     = cardsSortBy;
 window.cardsSortDirToggle = cardsSortDirToggle;

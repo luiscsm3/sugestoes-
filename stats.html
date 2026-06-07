@@ -1,516 +1,240 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jordelândia — Estatísticas</title>
+<title>Jordelândia RP — Estatísticas</title>
 <link rel="icon" type="image/png" href="favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root, [data-theme="dark"] {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #222;
-    --border: #2a2a2a;
-    --accent: #3a5bbf;
-    --accent-light: #3a5bbf22;
-    --red: #9e2a2a;
-    --text: #e8e8e8;
-    --text-muted: #888;
-    --text-dim: #444;
-    --radius: 8px;
-  }
+:root {
+  --bg:#f5f5f5;--surface:#fff;--surface2:#ebebeb;--border:#d0cece;
+  --accent:#1B2F6E;--accent-light:#1B2F6E18;--red:#8B1A1A;
+  --text:#1a1a1a;--text-muted:#5a5a5a;--text-dim:#aaaaaa;--radius:6px;
+  --font-body:'Inter',sans-serif;
+}
+[data-theme="dark"] {
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2a2a2a;
+  --accent:#3a5bbf;--accent-light:#3a5bbf20;--text:#e8e8e8;--text-muted:#888;--text-dim:#444;
+}
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+*::-webkit-scrollbar{width:6px;height:6px;}
+*::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
-  [data-theme="light"] {
-    --bg: #f5f5f5;
-    --surface: #ffffff;
-    --surface2: #ebebeb;
-    --border: #d0cece;
-    --accent: #1B2F6E;
-    --accent-light: #1B2F6E18;
-    --red: #8B1A1A;
-    --text: #1a1a1a;
-    --text-muted: #5a5a5a;
-    --text-dim: #aaaaaa;
-  }
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;padding:0 32px 32px;transition:background .3s,color .3s;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Header ── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:0 -32px 24px;padding:0 32px;height:56px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  gap:16px;position:relative;
+}
+header::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent) 0%,transparent 60%);opacity:.6;
+}
+.header-left{display:flex;align-items:center;gap:12px;}
+.logo-img{height:32px;}
+header h1{font-family:'UnifrakturMaguntia',cursive;font-size:24px;color:var(--accent);display:flex;align-items:baseline;gap:8px;line-height:1;}
+header h1 span{font-family:'Cinzel',serif;font-size:14px;font-weight:600;font-style:italic;color:var(--red);letter-spacing:.08em;}
+.subtitle{font-size:9px;color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase;margin-top:3px;}
+.header-right{display:flex;gap:6px;align-items:center;}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    min-height: 100vh;
-    padding: 20px 32px;
-  }
+/* ── Botões header ── */
+.btn{
+  background:var(--surface2);border:none;border-radius:6px;
+  color:var(--text-dim);font-family:var(--font-body);font-size:11px;font-weight:600;
+  padding:5px 14px;height:28px;cursor:pointer;text-decoration:none;
+  transition:background .12s,color .12s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover{background:var(--accent);color:#fff;}
+.btn-icon{
+  background:var(--surface2);border:none;border-radius:6px;color:var(--text-dim);
+  font-size:14px;width:28px;height:28px;cursor:pointer;
+  transition:background .12s,color .12s;display:flex;align-items:center;justify-content:center;padding:0;
+}
+.btn-icon:hover{background:var(--surface);color:var(--text-muted);}
 
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 10px;
-    margin-bottom: 24px;
-  }
+/* ── KPI cards ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:20px 0 16px;}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-top:3px solid var(--accent);border-radius:var(--radius);
+  padding:16px 20px;
+}
+.kpi-card.kpi-green{border-top-color:#2e7d4f;}
+.kpi-card.kpi-red{border-top-color:#e53935;}
+.kpi-card.kpi-orange{border-top-color:#fb8c00;}
+.kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);font-weight:700;margin-bottom:8px;}
+.kpi-value{font-size:36px;font-weight:700;color:var(--text);line-height:1;font-family:'Courier New',monospace;}
+.kpi-sub{font-size:11px;color:var(--text-dim);margin-top:6px;}
 
-  .header-left { display: flex; align-items: center; gap: 12px; }
-  .logo-img { height: 36px; }
+/* ── Chart cards ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+@media(max-width:800px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.chart-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);margin-bottom:16px;}
+.chart-wrap{position:relative;height:220px;}
 
-  h1 {
-    font-family: 'UnifrakturMaguntia', cursive;
-    font-size: 28px;
-    color: var(--accent);
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
+/* ── Contribuidores ── */
+.contrib-list{display:flex;flex-direction:column;gap:8px;}
+.contrib-row{display:flex;align-items:center;gap:10px;}
+.contrib-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.contrib-name{font-size:12px;font-weight:500;color:var(--accent);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.contrib-bar-wrap{width:80px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.contrib-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .6s ease;}
+.contrib-count{font-size:11px;color:var(--text-dim);font-weight:700;min-width:16px;text-align:right;font-family:'Courier New',monospace;}
 
-  h1 span {
-    font-family: 'Cinzel', serif;
-    font-size: 16px;
-    font-style: italic;
-    color: var(--red);
-  }
-
-  .subtitle {
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: .15em;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  .nav-link {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text-muted);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 7px 16px;
-    text-decoration: none;
-    transition: all .15s;
-  }
-  .nav-link:hover { border-color: var(--accent); color: var(--accent); }
-
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 22px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-
-  .card-total::before  { background: var(--accent); }
-  .card-ativas::before { background: #1e88e5; }
-  .card-ok::before     { background: #2e7d4f; }
-  .card-rec::before    { background: #e53935; }
-
-  .card-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: .12em;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  .card-value {
-    font-size: 40px;
-    font-weight: 700;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .card-total  .card-value { color: var(--accent); }
-  .card-ativas .card-value { color: #1e88e5; }
-  .card-ok     .card-value { color: #2e7d4f; }
-  .card-rec    .card-value { color: #e53935; }
-
-  .card-pct { font-size: 12px; color: var(--text-muted); }
-
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-
-  .chart-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 22px;
-  }
-
-  .chart-title {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: .12em;
-    color: var(--text-muted);
-    font-weight: 600;
-    margin-bottom: 14px;
-  }
-
-  .chart-wrap {
-    position: relative;
-    height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .user-list { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
-
-  .user-row { display: flex; align-items: center; gap: 10px; }
-
-  .user-rank { font-size: 10px; color: var(--text-dim); width: 16px; text-align: right; flex-shrink: 0; }
-
-  .user-avatar {
-    width: 26px; height: 26px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
-
-  .user-name { flex: 1; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  .user-bar-wrap { flex: 2; background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
-
-  .user-bar { height: 100%; border-radius: 4px; background: var(--accent); }
-
-  .user-count { font-size: 11px; color: var(--text-muted); width: 24px; text-align: right; flex-shrink: 0; }
-
-  .loading { text-align: center; color: var(--text-dim); padding: 80px; font-size: 13px; letter-spacing: .1em; }
-
-  @media (max-width: 900px) {
-    .cards { grid-template-columns: 1fr 1fr; }
-    .charts-grid { grid-template-columns: 1fr; }
-  }
+/* ── Atividade recente ── */
+.activity-list{display:flex;flex-direction:column;}
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.activity-item:last-child{border-bottom:none;}
+.activity-id{font-size:11px;color:var(--text-dim);font-weight:700;min-width:40px;font-family:'Courier New',monospace;}
+.activity-text{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.activity-date{font-size:10px;color:var(--text-dim);white-space:nowrap;}
+.loading{text-align:center;padding:80px;color:var(--text-dim);font-size:13px;}
 </style>
 </head>
 <body>
-
 <header>
   <div class="header-left">
     <img src="Jordelandia_Roleplay.png" class="logo-img" alt="Logo" />
     <div>
       <h1>Jordelândia <span>Roleplay</span></h1>
-      <p class="subtitle">Estatísticas de Sugestões</p>
+      <p class="subtitle">Estatísticas</p>
     </div>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button class="nav-link" id="btn-theme-stats" onclick="toggleThemeStats()" style="cursor:pointer;border:1px solid var(--border);">🌙</button>
-    <a href="index.html" class="nav-link">← Voltar à tabela</a>
+  <div class="header-right">
+    <a href="index.html" class="btn">← Voltar</a>
+    <button class="btn-icon" id="btn-theme" onclick="toggleTheme()">🌙</button>
   </div>
 </header>
 
-<div id="app">
-  <p class="loading">A carregar estatísticas...</p>
-</div>
-
-<script>
-  // Tema sincronizado com o index
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btn-theme-stats');
-    if (btn) btn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-  });
-
-  function toggleThemeStats() {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('btn-theme-stats').textContent = isDark ? '🌙' : '☀️';
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  }
-
-  function animateCount(el, target, duration = 1200) {
-    const start = performance.now();
-    const update = (now) => {
-      const progress = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(eased * target);
-      if (progress < 1) requestAnimationFrame(update);
-    };
-    requestAnimationFrame(update);
-  }
-</script>
+<div id="root"><div class="loading">A carregar dados...</div></div>
 
 <script type="module">
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAbNKlWYSe1rIn1t5yFS8kgJlwWggn5eLQ",
-  authDomain: "sugestoes-f03d9.firebaseapp.com",
-  projectId: "sugestoes-f03d9",
-  storageBucket: "sugestoes-f03d9.firebasestorage.app",
-  messagingSenderId: "640972402801",
-  appId: "1:640972402801:web:c1aaf57020fb7e1f05abd0"
+  apiKey:"AIzaSyAbNKlWYSe1rIn1t5yFS8kgJlwWggn5eLQ",
+  authDomain:"sugestoes-f03d9.firebaseapp.com",
+  projectId:"sugestoes-f03d9",
+  storageBucket:"sugestoes-f03d9.firebasestorage.app",
+  messagingSenderId:"640972402801",
+  appId:"1:640972402801:web:c1aaf57020fb7e1f05abd0"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const db = getFirestore(initializeApp(firebaseConfig));
 
-const COLORS_PRIO = {
-  'Urgente':'#e53935','Necessário':'#f9a825','Não urgente':'#1565c0',
-  'Stand-by':'#546e7a','Terminado':'#2e7d32','Inviável':'#c62828','Sem prioridade':'#444'
-};
-const COLORS_FEED = {
-  'Em curso':'#00897b','Concluído':'#43a047','Recusado':'#e53935',
-  'Update':'#1e88e5','Em testes':'#8e24aa','Stand-by':'#546e7a',
-  'Em análise':'#fb8c00','Sem efeito':'#f4511e','Sem sentido':'#d81b60','Sem feedback':'#444'
-};
-const AVATAR_COLORS = ['#1B2F6E','#2e7d4f','#8B1A1A','#00897b','#8e24aa','#c0392b','#1565c0','#546e7a'];
+const prioColors = {'Urgente':'#e53935','Necessário':'#f9a825','Não urgente':'#1565c0','Stand-by':'#546e7a','Terminado':'#2e7d32','Inviável':'#c62828','':'#90a4ae'};
+const feedColors = {'Em curso':'#00897b','Concluído':'#43a047','Recusado':'#e53935','Update':'#1e88e5','Em testes':'#8e24aa','Stand-by':'#546e7a','Em análise':'#fb8c00','Sem efeito':'#f4511e','Sem sentido':'#d81b60','':'#90a4ae'};
 
 function avatarColor(name) {
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[Math.abs(h)];
+  const c=['#1B2F6E','#2e7d4f','#8B1A1A','#00897b','#8e24aa','#c0392b','#1565c0','#546e7a'];
+  let h=0; for(const ch of name) h=(h*31+ch.charCodeAt(0))%c.length;
+  return c[Math.abs(h)];
 }
 
-const isConcluido = d => d.prioridade === 'Terminado' && d.feedback === 'Concluído';
-const isRecusado  = d => {
-  if (d.prioridade === 'Terminado' && ['Recusado','Sem efeito','Sem sentido'].includes(d.feedback)) return true;
-  if (d.prioridade === 'Inviável'  && ['Recusado','Concluído','Sem efeito','Sem sentido'].includes(d.feedback)) return true;
-  return false;
+function relDate(str) {
+  if(!str) return '—';
+  const [dp,tp]=str.split(' ');const[d,m,y]=dp.split('/').map(Number);
+  const[hh,mm]=(tp||'00:00').split(':').map(Number);
+  const ms=Date.now()-new Date(y,m-1,d,hh,mm).getTime();
+  const mins=Math.floor(ms/6e4),hrs=Math.floor(ms/36e5),days=Math.floor(ms/864e5);
+  if(mins<1)return'agora';if(mins<60)return`há ${mins}m`;
+  if(hrs<24)return`há ${hrs}h`;if(days===1)return'ontem';
+  if(days<7)return`há ${days}d`;return`há ${Math.floor(days/7)}sem`;
+}
+
+let charts=[];
+
+onSnapshot(query(collection(db,'sugestoes'),orderBy('id','asc')), snap => {
+  const data=snap.docs.map(d=>({...d.data()}));
+  charts.forEach(c=>c.destroy()); charts=[];
+  render(data);
+});
+
+function render(data) {
+  const total=data.length;
+  const concluidos=data.filter(d=>d.feedback==='Concluído').length;
+  const recusados=data.filter(d=>['Recusado','Sem efeito','Sem sentido'].includes(d.feedback)).length;
+  const ativas=total-concluidos-recusados;
+  const taxa=total?Math.round(concluidos/total*100):0;
+
+  const prioCounts={};data.forEach(d=>{const k=d.prioridade||'';prioCounts[k]=(prioCounts[k]||0)+1;});
+  const feedCounts={};data.forEach(d=>{const k=d.feedback||'';feedCounts[k]=(feedCounts[k]||0)+1;});
+
+  const contrib={};data.forEach(d=>{contrib[d.discord]=(contrib[d.discord]||0)+1;});
+  const top=Object.entries(contrib).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxC=top[0]?.[1]||1;
+
+  const recent=[...data].reverse().slice(0,10);
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const textColor=isDark?'#888':'#5a5a5a';
+
+  document.getElementById('root').innerHTML=`
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">${total}</div><div class="kpi-sub">sugestões registadas</div></div>
+      <div class="kpi-card"><div class="kpi-label">Ativas</div><div class="kpi-value">${ativas}</div><div class="kpi-sub">em aberto</div></div>
+      <div class="kpi-card kpi-green"><div class="kpi-label">Concluídas</div><div class="kpi-value">${concluidos}</div><div class="kpi-sub">taxa: ${taxa}%</div></div>
+      <div class="kpi-card kpi-red"><div class="kpi-label">Recusadas</div><div class="kpi-value">${recusados}</div><div class="kpi-sub">de ${total} total</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Por Prioridade</div><div class="chart-wrap"><canvas id="chart-prio"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Por Estado</div><div class="chart-wrap"><canvas id="chart-feed"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Top Contribuidores</div><div class="contrib-list">${
+        top.map(([name,count])=>`
+          <div class="contrib-row">
+            <div class="contrib-avatar" style="background:${avatarColor(name)}">${name.charAt(0).toUpperCase()}</div>
+            <span class="contrib-name">${name}</span>
+            <div class="contrib-bar-wrap"><div class="contrib-bar" style="width:${Math.round(count/maxC*100)}%"></div></div>
+            <span class="contrib-count">${count}</span>
+          </div>`).join('')
+      }</div></div>
+      <div class="chart-card"><div class="chart-title">Atividade Recente</div><div class="activity-list">${
+        recent.map(d=>`
+          <div class="activity-item">
+            <span class="activity-id">#${d.id}</span>
+            <span class="activity-text">${d.sugestao}</span>
+            <span class="activity-date">${relDate(d.data)}</span>
+          </div>`).join('')
+      }</div></div>
+    </div>`;
+
+  const mkChart=(id,labels,vals,colors)=>new Chart(document.getElementById(id),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:isDark?'#1a1a1a':'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11,family:'Inter'},color:textColor,padding:10,boxWidth:12}}}}
+  });
+
+  charts.push(mkChart('chart-prio',
+    Object.keys(prioCounts).map(k=>k||'Sem prioridade'),
+    Object.values(prioCounts),
+    Object.keys(prioCounts).map(k=>prioColors[k]||'#90a4ae')
+  ));
+  charts.push(mkChart('chart-feed',
+    Object.keys(feedCounts).map(k=>k||'Pendente'),
+    Object.values(feedCounts),
+    Object.keys(feedCounts).map(k=>feedColors[k]||'#90a4ae')
+  ));
+}
+
+window.toggleTheme=function(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',isDark?'light':'dark');
+  document.getElementById('btn-theme').textContent=isDark?'🌙':'☀️';
+  localStorage.setItem('theme',isDark?'light':'dark');
 };
-const isAtiva = d => !isConcluido(d) && !isRecusado(d);
 
-Chart.defaults.color = '#888';
-Chart.defaults.borderColor = '#2a2a2a';
-Chart.defaults.font.family = 'Inter';
-
-try {
-  const snapshot  = await getDocs(collection(db, "sugestoes"));
-  const sugestoes = snapshot.docs.map(d => d.data());
-  const total     = sugestoes.length;
-  const ativas    = sugestoes.filter(isAtiva).length;
-  const concluidas = sugestoes.filter(isConcluido).length;
-  const recusadas  = sugestoes.filter(isRecusado).length;
-  const pct = n => total ? Math.round(n / total * 100) : 0;
-
-  const porPrioridade = {};
-  const porFeedback   = {};
-  const porUser       = {};
-
-  sugestoes.forEach(d => {
-    const p = d.prioridade || 'Sem prioridade';
-    const f = d.feedback   || 'Sem feedback';
-    const u = d.discord    || 'Desconhecido';
-    porPrioridade[p] = (porPrioridade[p] || 0) + 1;
-    porFeedback[f]   = (porFeedback[f]   || 0) + 1;
-    porUser[u]       = (porUser[u]       || 0) + 1;
-  });
-
-  const topUsers = Object.entries(porUser)
-    .sort((a, b) => b[1] - a[1]).slice(0, 8)
-    .map(([nome, count]) => ({ nome, count }));
-
-  document.getElementById('app').innerHTML = `
-    <div class="cards">
-      <div class="card card-total">
-        <div class="card-label">Total de Sugestões</div>
-        <div class="card-value" id="cv-total">0</div>
-        <div class="card-pct">registadas</div>
-      </div>
-      <div class="card card-ativas">
-        <div class="card-label">Ativas</div>
-        <div class="card-value" id="cv-ativas">0</div>
-        <div class="card-pct">${pct(ativas)}% do total</div>
-      </div>
-      <div class="card card-ok">
-        <div class="card-label">Concluídas</div>
-        <div class="card-value" id="cv-conc">0</div>
-        <div class="card-pct">${pct(concluidas)}% do total</div>
-      </div>
-      <div class="card card-rec">
-        <div class="card-label">Recusadas</div>
-        <div class="card-value" id="cv-rec">0</div>
-        <div class="card-pct">${pct(recusadas)}% do total</div>
-      </div>
-    </div>
-
-    <div class="charts-grid">
-      <div class="chart-box">
-        <div class="chart-title">Estado Geral</div>
-        <div class="chart-wrap"><canvas id="c-estado"></canvas></div>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title">Por Prioridade</div>
-        <div class="chart-wrap"><canvas id="c-prio"></canvas></div>
-      </div>
-    </div>
-
-    <div class="charts-grid">
-      <div class="chart-box">
-        <div class="chart-title">Por Feedback Dev</div>
-        <div class="chart-wrap"><canvas id="c-feed"></canvas></div>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title">Top Utilizadores</div>
-        <div class="user-list" id="user-list"></div>
-      </div>
-    </div>
-
-    <div class="charts-grid" style="margin-bottom:14px">
-      <div class="chart-box">
-        <div class="chart-title">Evolução de Sugestões</div>
-        <div class="chart-wrap"><canvas id="c-timeline"></canvas></div>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title">Taxa de Conclusão</div>
-        <div id="completion-wrap" style="padding-top:8px"></div>
-      </div>
-    </div>
-  `;
-
-  // Count-up animado
-  animateCount(document.getElementById('cv-total'), total);
-  animateCount(document.getElementById('cv-ativas'), ativas, 1000);
-  animateCount(document.getElementById('cv-conc'), concluidas, 900);
-  animateCount(document.getElementById('cv-rec'), recusadas, 800);
-
-  // Estado geral — donut
-  new Chart(document.getElementById('c-estado'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Ativas','Concluídas','Recusadas'],
-      datasets: [{ data: [ativas, concluidas, recusadas],
-        backgroundColor: ['#1e88e5','#2e7d4f','#e53935'],
-        borderWidth: 2, borderColor: '#1a1a1a' }]
-    },
-    options: { cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } } } }
-  });
-
-  // Prioridade — barras verticais
-  const prioL = Object.keys(porPrioridade);
-  new Chart(document.getElementById('c-prio'), {
-    type: 'bar',
-    data: {
-      labels: prioL,
-      datasets: [{ data: Object.values(porPrioridade),
-        backgroundColor: prioL.map(l => COLORS_PRIO[l] || '#90a4ae'),
-        borderRadius: 4, borderSkipped: false }]
-    },
-    options: { plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } }, x: { grid: { display: false } } } }
-  });
-
-  // Feedback — barras horizontais
-  const feedL = Object.keys(porFeedback);
-  new Chart(document.getElementById('c-feed'), {
-    type: 'bar',
-    data: {
-      labels: feedL,
-      datasets: [{ data: Object.values(porFeedback),
-        backgroundColor: feedL.map(l => COLORS_FEED[l] || '#90a4ae'),
-        borderRadius: 4, borderSkipped: false }]
-    },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } },
-      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } }, y: { grid: { display: false } } } }
-  });
-
-  // Top utilizadores
-  const maxC = topUsers[0]?.count || 1;
-  document.getElementById('user-list').innerHTML = topUsers.map((u, i) => `
-    <div class="user-row">
-      <div class="user-rank">${i + 1}</div>
-      <div class="user-avatar" style="background:${avatarColor(u.nome)}">${u.nome.charAt(0).toUpperCase()}</div>
-      <div class="user-name">${u.nome}</div>
-      <div class="user-bar-wrap"><div class="user-bar" style="width:${Math.round(u.count/maxC*100)}%"></div></div>
-      <div class="user-count">${u.count}</div>
-    </div>
-  `).join('');
-
-  // Timeline
-  const porDia = {};
-  sugestoes.forEach(d => {
-    if (!d.data) return;
-    const dia = d.data.split(' ')[0];
-    porDia[dia] = (porDia[dia] || 0) + 1;
-  });
-  const sortedDays = Object.keys(porDia).sort((a, b) => {
-    const [da,ma,ya] = a.split('/').map(Number);
-    const [db,mb,yb] = b.split('/').map(Number);
-    return new Date(ya, ma-1, da) - new Date(yb, mb-1, db);
-  });
-  // acumulado
-  let acc = 0;
-  const accData = sortedDays.map(d => { acc += porDia[d]; return acc; });
-  new Chart(document.getElementById('c-timeline'), {
-    type: 'line',
-    data: {
-      labels: sortedDays,
-      datasets: [{
-        label: 'Total acumulado',
-        data: accData,
-        borderColor: '#3a5bbf',
-        backgroundColor: '#3a5bbf22',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: '#3a5bbf',
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#222' } },
-        x: { grid: { display: false }, ticks: { maxRotation: 45 } }
-      }
-    }
-  });
-
-  // Taxa de conclusão
-  const completionEl = document.getElementById('completion-wrap');
-  const taxaConclusao = total ? Math.round(concluidas / total * 100) : 0;
-  const taxaAtiva = total ? Math.round(ativas / total * 100) : 0;
-  const taxaRecusada = total ? Math.round(recusadas / total * 100) : 0;
-
-  const barRow = (label, value, color, count) => `
-    <div style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:12px;font-weight:600;color:var(--text-muted)">${label}</span>
-        <span style="font-size:12px;font-weight:700;color:${color}">${value}% <span style="color:var(--text-dim);font-weight:400">(${count})</span></span>
-      </div>
-      <div style="height:10px;background:var(--surface2);border-radius:6px;overflow:hidden">
-        <div style="height:100%;width:${value}%;background:${color};border-radius:6px;transition:width .8s ease"></div>
-      </div>
-    </div>`;
-
-  completionEl.innerHTML =
-    barRow('Ativas', taxaAtiva, '#1e88e5', ativas) +
-    barRow('Concluídas', taxaConclusao, '#2e7d4f', concluidas) +
-    barRow('Recusadas', taxaRecusada, '#e53935', recusadas) +
-    `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em">Taxa de resolução</div>
-      <div style="font-size:48px;font-weight:700;color:${taxaConclusao >= 50 ? '#2e7d4f' : '#f9a825'}">${taxaConclusao}%</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">${concluidas} concluídas de ${total} total</div>
-    </div>`;
-
-} catch(err) {
-  document.getElementById('app').innerHTML = `<p class="loading">Erro: ${err.message}</p>`;
-}
+const t=localStorage.getItem('theme')||'light';
+document.documentElement.setAttribute('data-theme',t);
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('btn-theme').textContent=t==='dark'?'☀️':'🌙';
+});
 </script>
 </body>
 </html>
