@@ -497,8 +497,12 @@ function renderCards(filtered) {
         </div>
       </div>
       <div class="card-title">${prioBadgeDot(d.prioridade)}${esc(d.sugestao)}</div>
-      ${d.descricao ? `<div class="card-desc">${cellWithExpand(d.descricao)}</div>` : ''}
+      <div class="card-desc">
+        <span class="card-section-label">Descrição</span>
+        ${d.descricao ? cellWithExpand(d.descricao) : '<span class="card-empty-field">Sem descrição</span>'}
+      </div>
       <div class="card-comment">
+        <span class="card-section-label">Comentário</span>
         <div class="comment-cell" data-docid="${d._docId}" data-value="${esc(d.comentario||'')}" onclick="startEditComment(this)">
           ${d.comentario ? `<span class="comment-text">${esc(d.comentario)}</span>` : '<span class="comment-placeholder">Adicionar comentário...</span>'}
           <span class="comment-icon">✏</span>

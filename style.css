@@ -1003,6 +1003,22 @@ td.td-actions { width: 40px; text-align: center; }
   gap: 4px;
 }
 
+.card-section-label {
+  display: block;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-empty-field {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
 .card-desc {
   font-size: 12px;
   color: var(--text-muted);
@@ -1013,14 +1029,13 @@ td.td-actions { width: 40px; text-align: center; }
 
 .card-comment {
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
+  flex-direction: column;
+  gap: 4px;
   background: var(--surface2);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 6px 8px;
+  padding: 8px 10px;
 }
-
-.card-comment-label { font-size: 12px; flex-shrink: 0; margin-top: 2px; }
 
 .card-comment .comment-cell { background: none; border: none; padding: 0; flex: 1; }
 .card-comment .comment-cell:hover { background: none; border: none; }
